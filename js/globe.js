@@ -47,6 +47,20 @@ var globe = (function () {
             .on('mouseover', cellMouseOver)
             .on('mouseout', cellMouseOut);
 
+        const sensitivity = 75;
+
+        svg.call(d3.drag()
+            .on('drag', (event) => {
+                const rotate = projection.rotate();
+                const k = sensitivity / projection.scale();
+                projection.rotate([
+                    rotate[0] + event.dx * k,
+                    rotate[1] - event.dy * k
+                ]);
+                path = d3.geoPath().projection(projection);
+                globe.attr('d', path);
+            }));
+
         var redraw = function () {
             globe.attr('d', path);
         };
