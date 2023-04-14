@@ -61,6 +61,15 @@ var globe = (function () {
                 globe.attr('d', path);
             }));
 
+        function autoRotate(speed) {
+            var rotationVelocity = speed / 1000;
+            d3.timer(function () {
+                var currentRotation = projection.rotate();
+                projection.rotate([currentRotation[0] + rotationVelocity, currentRotation[1]]);
+                redraw();
+            });
+        }
+
         var redraw = function () {
             globe.attr('d', path);
         };
@@ -70,7 +79,8 @@ var globe = (function () {
         return {
             projection: projection,
             globe: globe,
-            redraw: redraw
+            redraw: redraw,
+            autoRotate: autoRotate
         };
     }
 
