@@ -9,6 +9,5 @@ console.log("n: " + n);
 console.log("cells: " + cells.length);
 
 var map = globe
-  .create(canvasElement, cells)
-  // .autoRotate(1);
+  .create(canvasElement, cells);
 
