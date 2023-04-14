@@ -49,10 +49,10 @@ var dual = (function () {
             orderedFaces.push(orderedFaces[0]);
         
             // sets face's coordinates
-            dual.coordinates = [orderedFaces.map(d3.geo.centroid)];
+            dual.coordinates = [orderedFaces.map(d3.geoCentroid)];
         
             // adds face's centroid coordinates
-            dual.c = d3.geom.polygon(dual.coordinates[0]).centroid();
+            dual.c = d3.polygonCentroid(dual.coordinates[0]);
             dual.c[0] = parseFloat(dual.c[0].toFixed(3));
             dual.c[1] = parseFloat(dual.c[1].toFixed(3));
         

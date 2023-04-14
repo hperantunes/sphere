@@ -6,77 +6,81 @@ var globe = (function () {
             scale = 300, // default = 150
             clipAngle = 90;
 
-        // this must be moved out of globe.js
         var svg = d3.select(canvasElement)
             .append('svg')
             .attr('width', width)
             .attr('height', height);
 
-        var projection = d3.geo.orthographic()
+        var projection = d3.geoOrthographic()
             .translate([width / 2, height / 2])
             .scale(scale)
             .clipAngle(clipAngle);
 
-        var path = d3.geo.path().projection(projection);
+        var path = d3.geoPath().projection(projection);
 
-        /* mouse drag, this must me moved out of globe.js */
-        var sensibility = 150 / projection.scale() / 2, // 150 is the default scale
-            maxRotationY = 36; // 36 degrees
-        var drag = d3.behavior.drag()
-            .origin(function () {
-                var r = projection.rotate();
-                return {
-                    x: r[0] / sensibility,
-                    y: -r[1] / sensibility
-                };
+        var sensibility = 150 / projection.scale() / 2,
+            maxRotationY = 36;
+
+        var prevCoords;
+        var drag = d3.drag()
+            .on("start", function (event) {
+                prevCoords = d3.pointer(event);
+                var rotate = projection.rotate();
+                d3.select(this).datum({
+                    x: rotate[0] / sensibility,
+                    y: -rotate[1] / sensibility
+                });
             })
-            .on("drag", function () {
-                var lambda = d3.event.x * sensibility,
-                    phi = -d3.event.y * sensibility,
+            .on("drag", function (event) {
+                var current = d3.select(this).datum();
+                var currCoords = d3.pointer(event);
+                var dx = currCoords[0] - prevCoords[0];
+                var dy = currCoords[1] - prevCoords[1];
+
+                var lambda = current.x + dx / sensibility,
+                    phi = current.y - dy / sensibility,
                     rotate = projection.rotate();
-                //Restriction for rotating upside-down
+
+                // Restriction for rotating upside-down
                 phi = phi > maxRotationY ? maxRotationY :
                     phi < -maxRotationY ? -maxRotationY :
                         phi;
                 projection.rotate([lambda, phi]);
                 redraw();
+
+                prevCoords = currCoords;
             });
 
-        // this will never be generated on client
         var cellClass = function (cell) {
             var result = Math.random() > .5 ? 'land grass' : 'sea shallow';
-            if (Math.abs(d3.geo.centroid(cell)[1]) > 66.5) result += ' frozen';
+            if (Math.abs(d3.geoCentroid(cell)[1]) > 66.5) result += ' frozen';
             return result;
         };
 
-        // this must be moved out of globe.js
-        var cellClick = function (cell) {
-            if (d3.event.defaultPrevented)
-                return; // click suppressed
+        var cellClick = function (event, cell) {
+            if (event.defaultPrevented)
+                return;
             console.log(cell);
         };
 
-        // this must be moved out of globe.js
-        var cellMouseOver = function (d, i) {
+        var cellMouseOver = function (event, d) {
             d3.select(this)
                 .classed('hover', true);
         };
 
-        // this must be moved out of globe.js
-        var cellMouseOut = function (d, i) {
+        var cellMouseOut = function (event, d) {
             d3.select(this)
                 .classed('hover', false);
         }
 
         var globe = svg.selectAll('path')
             .data(cells)
-            .enter()
-            .append('path')
-            .attr('class', cellClass)       // classes to be moved out of globe.js
-            .on('click', cellClick)         // mouse click to be moved out of globe.js
-            .on('mouseover', cellMouseOver) // mouse events to be moved out of globe.js
-            .on('mouseout', cellMouseOut)   // mouse events to be moved out of globe.js
-            .call(drag);                    // drag behaviour to be moved out of globe.js
+            .join('path')
+            .attr('class', cellClass)
+            .on('click', cellClick)
+            .on('mouseover', cellMouseOver)
+            .on('mouseout', cellMouseOut)
+            .call(drag);
 
         var autoRotate = function (speed) {
             var velocity = [speed / 100, .000],
