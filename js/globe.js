@@ -6,14 +6,15 @@ const globe = (() => {
   const color = {
     terrain: {
       land: {
-        green: "#64DD17"
+        green: "#64DD17",
+        brown: "#8D6E63"
       },
       water: {
         blueDeep: "#2962FF"
       },
       ice: "#E3F2FD",
     },
-    red: "#f44336",
+    red: "#F44336",
     black: "#212121"
   }
 
@@ -39,11 +40,7 @@ const globe = (() => {
 
     const simplex = new SimplexNoise();
 
-    const noise = (x, y) => {
-      const freq = 0.5;
-      const octaves = 8;
-      const persistence = 0.6;
-
+    const noise = (x, y, freq, octaves, persistence) => {
       let value = 0;
       let amplitude = 1;
       let maxValue = 0;
@@ -69,11 +66,15 @@ const globe = (() => {
 
     const isHighLatitude = (latitude) => Math.abs(latitude) > 66.5;
 
-    const getLandColor = (latitude) => {
-      return isHighLatitude(latitude)
-        ? color.terrain.ice
-        : color.terrain.land.green;
-    }
+    const getLandColor = (latitude, elevation) => {
+      if (elevation > 0.4 || isHighLatitude(latitude)) {
+        return color.terrain.ice;
+      } else if (elevation > 0.25) {
+        return color.terrain.land.brown;
+      } else {
+        return color.terrain.land.green;
+      }
+    };
 
     const getWaterColor = (latitude) => {
       return isHighLatitude(latitude)
@@ -83,10 +84,10 @@ const globe = (() => {
 
     const cellClass = (cell) => {
       const centroid = d3.geoCentroid(cell);
-      const n = noise(centroid[0], centroid[1]);
+      const elevation = noise(centroid[0], centroid[1], 0.5, 8, 0.6);
 
-      if (n > 0.1) {
-        return getLandColor(centroid[1]);
+      if (elevation > 0.1) {
+        return getLandColor(centroid[1], elevation);
       } else {
         return getWaterColor(centroid[1]);
       }
