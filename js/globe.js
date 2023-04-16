@@ -1,7 +1,22 @@
 const globe = (() => {
+    const width = 1000;
+    const height = 800;
+
+    const color = {
+        terrain: {
+            land: {
+                green: "#64DD17"
+            },
+            water: {
+                blueDeep: "#2962FF"
+            },
+            ice: "#E3F2FD",
+        },
+        red: "#f44336",
+        black: "#212121"
+    }
+
     const create = (canvasElement, cells) => {
-        const width = 1000;
-        const height = 800;
         const scale = 300;
         const clipAngle = 90;
 
@@ -27,48 +42,48 @@ const globe = (() => {
             const freq = 0.5;
             const octaves = 8;
             const persistence = 0.6;
-        
+
             let value = 0;
             let amplitude = 1;
             let maxValue = 0;
             let currFreq = freq;
-        
+
             const angleX = (x / 180) * Math.PI;
             const angleY = (y / 180) * Math.PI;
-        
+
             const r = Math.cos(angleY);
             const nx = r * Math.cos(angleX);
             const ny = r * Math.sin(angleX);
             const nz = Math.sin(angleY);
-        
+
             for (let i = 0; i < octaves; i++) {
                 value += simplex.noise3D(nx * currFreq, ny * currFreq, nz * currFreq) * amplitude;
                 maxValue += amplitude;
                 amplitude *= persistence;
                 currFreq *= 2;
             }
-        
+
             return value / maxValue;
         };
 
         const isHighLatitude = (latitude) => Math.abs(latitude) > 66.5;
 
         const getLandColor = (latitude) => {
-            return isHighLatitude(latitude) 
-                ? "#ccff90"
-                : "#64dd17";
+            return isHighLatitude(latitude)
+                ? color.terrain.ice
+                : color.terrain.land.green;
         }
 
         const getWaterColor = (latitude) => {
-            return isHighLatitude(latitude) 
-                ? "#82b1ff"
-                : "#2962ff";
+            return isHighLatitude(latitude)
+                ? color.terrain.ice
+                : color.terrain.water.blueDeep;
         }
 
         const cellClass = (cell) => {
             const centroid = d3.geoCentroid(cell);
             const n = noise(centroid[0], centroid[1]);
-        
+
             if (n > 0.1) {
                 return getLandColor(centroid[1]);
             } else {
@@ -81,17 +96,15 @@ const globe = (() => {
         });
 
         const redraw = () => {
-            context.fillStyle = "black";
+            context.fillStyle = color.black;
             context.fillRect(0, 0, width, height);
 
             cells.forEach((cell) => {
                 if (d3.geoContains({ type: "Sphere" }, d3.geoCentroid(cell))) {
                     context.beginPath();
                     path(cell);
-                    context.fillStyle = cell.hovered ? "red" : cell.style;
+                    context.fillStyle = cell.hovered ? color.red : cell.style;
                     context.fill();
-                    context.strokeStyle = "black";
-                    context.lineWidth = 0.2;
                 }
             });
         };
