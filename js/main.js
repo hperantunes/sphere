@@ -10,4 +10,4 @@ console.log("cells: " + cells.length);
 
 var map = globe
   .create(canvasElement, cells)
-  .autoRotate(15); // Value is degrees per second
+  .autoRotate(.1);
