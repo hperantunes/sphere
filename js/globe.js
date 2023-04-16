@@ -24,33 +24,55 @@ const globe = (() => {
         const simplex = new SimplexNoise();
 
         const noise = (x, y) => {
-            let freq = 0.015;
+            const freq = 0.5;
             const octaves = 8;
-            const persistence = 0.5;
+            const persistence = 0.6;
+        
             let value = 0;
             let amplitude = 1;
             let maxValue = 0;
-
+            let currFreq = freq;
+        
+            const angleX = (x / 180) * Math.PI;
+            const angleY = (y / 180) * Math.PI;
+        
+            const r = Math.cos(angleY);
+            const nx = r * Math.cos(angleX);
+            const ny = r * Math.sin(angleX);
+            const nz = Math.sin(angleY);
+        
             for (let i = 0; i < octaves; i++) {
-                value += simplex.noise2D(x * freq, y * freq) * amplitude;
+                value += simplex.noise3D(nx * currFreq, ny * currFreq, nz * currFreq) * amplitude;
                 maxValue += amplitude;
                 amplitude *= persistence;
-                freq *= 2;
+                currFreq *= 2;
             }
-
+        
             return value / maxValue;
         };
+
+        const isHighLatitude = (latitude) => Math.abs(latitude) > 66.5;
+
+        const getLandColor = (latitude) => {
+            return isHighLatitude(latitude) 
+                ? "#ccff90"
+                : "#64dd17";
+        }
+
+        const getWaterColor = (latitude) => {
+            return isHighLatitude(latitude) 
+                ? "#82b1ff"
+                : "#2962ff";
+        }
 
         const cellClass = (cell) => {
             const centroid = d3.geoCentroid(cell);
             const n = noise(centroid[0], centroid[1]);
-
-            if (Math.abs(centroid[1]) > 66.5) {
-                return "white";
-            } else if (n > 0.15) {
-                return "green";
+        
+            if (n > 0.1) {
+                return getLandColor(centroid[1]);
             } else {
-                return "blue";
+                return getWaterColor(centroid[1]);
             }
         };
 
