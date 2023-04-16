@@ -1,3 +1,4 @@
+// main.js
 var canvasElement = document.getElementById('map');
 
 var n = 24;
