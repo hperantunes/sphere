@@ -165,6 +165,14 @@ const globe = (() => {
     canvas.call(drag);
     redraw();
 
+    const handleZoom = (event) => {
+      const newScale = projection.scale() * (event.deltaY < 0 ? 1.1 : 0.9);
+      projection.scale(newScale);
+      redraw();
+    };
+
+    canvas.on('wheel', handleZoom);
+
     const autoRotate = (speed) => {
       if (speed <= 0) {
         return;
