@@ -1,6 +1,6 @@
 var canvasElement = document.getElementById('map');
 
-var n = 6;
+var n = 24;
 
 var cells = grid.generate(n);
 
@@ -10,4 +10,4 @@ console.log("cells: " + cells.length);
 
 var map = globe
   .create(canvasElement, cells)
-  .autoRotate(.1);
+  .autoRotate(0);
