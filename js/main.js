@@ -1,7 +1,7 @@
 // main.js
 var canvasElement = document.getElementById('map');
 
-var n = 24;
+var n = 36;
 
 var cells = grid.generate(n);
 

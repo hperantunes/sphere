@@ -3,20 +3,18 @@ const globe = (() => {
   const width = 1000;
   const height = 800;
 
-  const color = {
-    terrain: {
-      land: {
-        green: "#64DD17",
-        brown: "#8D6E63"
-      },
-      water: {
-        blueDeep: "#2962FF"
-      },
-      ice: "#E3F2FD",
-    },
-    red: "#F44336",
-    black: "#212121"
-  }
+  const colorWater4 = "#0A0B46";
+  const colorWater3 = "#090A59";
+  const colorWater2 = "#2031A8";
+  const colorWater1 = "#436DC5";
+  const colorLand1 = "#558747";
+  const colorLand2 = "#6E876E";
+  const colorLand3 = "#576348";
+  const colorLand4 = "#362211";
+  const colorLand5 = "#1C0D13";
+  const colorIce = "#E3F2FD";
+  const colorRed = "#F44336";
+  const colorBlack = "#000000"
 
   const create = (canvasElement, cells) => {
     const scale = 300;
@@ -64,32 +62,30 @@ const globe = (() => {
       return value / maxValue;
     };
 
-    const isHighLatitude = (latitude) => Math.abs(latitude) > 66.5;
-
-    const getLandColor = (latitude, elevation) => {
-      if (elevation > 0.4 || isHighLatitude(latitude)) {
-        return color.terrain.ice;
-      } else if (elevation > 0.25) {
-        return color.terrain.land.brown;
-      } else {
-        return color.terrain.land.green;
-      }
-    };
-
-    const getWaterColor = (latitude) => {
-      return isHighLatitude(latitude)
-        ? color.terrain.ice
-        : color.terrain.water.blueDeep;
-    }
-
     const cellClass = (cell) => {
       const centroid = d3.geoCentroid(cell);
       const elevation = noise(centroid[0], centroid[1], 0.5, 8, 0.6);
 
-      if (elevation > 0.1) {
-        return getLandColor(centroid[1], elevation);
+      if (elevation > 0.6) {
+        return colorIce;
+      } else if (elevation > 0.55) {
+        return colorLand5;
+      } else if (elevation > 0.45) {
+        return colorLand4;
+      } else if (elevation > 0.35) {
+        return colorLand3;
+      } else if (elevation > 0.25) {
+        return colorLand2;
+      } else if (elevation > 0.1) {
+        return colorLand1;
+      } else if (elevation > 0.05) {
+        return colorWater1;
+      } else if (elevation > 0) {
+        return colorWater2;
+      } else if (elevation > -0.05) {
+        return colorWater3;
       } else {
-        return getWaterColor(centroid[1]);
+        return colorWater4;
       }
     };
 
@@ -98,14 +94,14 @@ const globe = (() => {
     });
 
     const redraw = () => {
-      context.fillStyle = color.black;
+      context.fillStyle = colorBlack;
       context.fillRect(0, 0, width, height);
 
       cells.forEach((cell) => {
         if (d3.geoContains({ type: "Sphere" }, d3.geoCentroid(cell))) {
           context.beginPath();
           path(cell);
-          context.fillStyle = cell.hovered ? color.red : cell.style;
+          context.fillStyle = cell.hovered ? colorRed : cell.style;
           context.fill();
         }
       });
