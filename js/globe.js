@@ -17,7 +17,7 @@ const globe = (() => {
   const colorBlack = "#000000"
 
   const create = (canvasElement, cells) => {
-    const scale = 300;
+    const scale = 360;
     const clipAngle = 90;
 
     const canvas = d3
@@ -36,7 +36,7 @@ const globe = (() => {
 
     const path = d3.geoPath().projection(projection).context(context);
 
-    const simplex = new SimplexNoise();
+    let simplex = new SimplexNoise();
 
     const noise = (x, y, freq, octaves, persistence) => {
       let value = 0;
@@ -78,10 +78,10 @@ const globe = (() => {
         return colorLand2;
       } else if (elevation > 0.1) {
         return colorLand1;
-      } else if (elevation > 0.05) {
-        return colorWater1;
-      } else if (elevation > 0) {
-        return colorWater2;
+        // } else if (elevation > 0.05) {
+        //   return colorWater1;
+        // } else if (elevation > 0) {
+        //   return colorWater2;
       } else if (elevation > -0.05) {
         return colorWater3;
       } else {
@@ -170,6 +170,26 @@ const globe = (() => {
 
     canvas.on('wheel', handleZoom);
 
+    const updateTerrain = () => {
+      simplex = new SimplexNoise(Math.random().toString(36).substr(2, 9));
+      cells.forEach((cell) => {
+        cell.style = cellClass(cell);
+      });
+      redraw();
+    };
+
+    document.getElementById("update-terrain").addEventListener("click", () => {
+      updateTerrain();
+    });
+
+    const setCells = (newCells) => {
+      cells = newCells;
+      cells.forEach((cell) => {
+        cell.style = cellClass(cell);
+      });
+      redraw();
+    };
+
     const autoRotate = (speed) => {
       if (speed <= 0) {
         return;
@@ -186,6 +206,8 @@ const globe = (() => {
     return {
       projection,
       redraw,
+      updateTerrain,
+      setCells,
       autoRotate,
     };
   };

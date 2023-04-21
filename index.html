@@ -4,12 +4,27 @@
 
 <head>
   <title>Sphere</title>
+  <style>
+    div {
+      float: left;
+      margin-right: 10px;
+    }
+    button {
+      display: block;
+      margin-bottom: 10px;
+    }
+  </style>
 </head>
 
 <body>
   <div id="game" class="container">
     <div id="map">
     </div>
+  </div>
+  <div>
+    <button id="update-terrain">Update Terrain</button>
+    <button id="increase-n">Increase N</button>
+    <button id="decrease-n">Decrease N</button>
   </div>
   <script src="vendor/d3.v6.min.js"></script>
   <script src="vendor/geodesic.js"></script>

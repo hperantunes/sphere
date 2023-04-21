@@ -1,14 +1,36 @@
 // main.js
 var canvasElement = document.getElementById('map');
 
-var n = 36;
+let n = 24; // Initialize the n variable
+let map = globe.create(canvasElement, initCells(n));
+map.autoRotate(0);
 
-var cells = grid.generate(n);
+function initCells(n) {
+  var cells = grid.generate(n);
 
-console.log(JSON.stringify(cells));
-console.log("n: " + n);
-console.log("cells: " + cells.length);
+  console.log(JSON.stringify(cells));
+  console.log("n: " + n);
+  console.log("cells: " + cells.length);
 
-var map = globe
-  .create(canvasElement, cells)
-  .autoRotate(0);
+  return cells;
+}
+
+function updateGlobe(value) {
+  n = Math.floor(value);
+  const newCells = initCells(n);
+  map.setCells(newCells);
+  map.redraw();
+}
+
+const increaseNButton = document.getElementById("increase-n");
+const decreaseNButton = document.getElementById("decrease-n");
+
+increaseNButton.addEventListener("click", () => {
+  updateGlobe(n * 2);
+});
+
+decreaseNButton.addEventListener("click", () => {
+  if (n > 1) {
+    updateGlobe(n / 2);
+  }
+});
