@@ -83,6 +83,7 @@ window.addEventListener('DOMContentLoaded', function () {
   camera.angularSensibilityY = 2500; // Same as above, adjust as needed
 
   const goldberg = BABYLON.MeshBuilder.CreateGoldberg("g", { m: m, n: n, size: 1 });
+  goldberg.isPickable = true;  // Ensure the mesh can be picked
 
   // Create an array to hold all face color data
   const faceColors = goldberg.goldbergData.faceCenters.map((face, i) => {
@@ -91,10 +92,32 @@ window.addEventListener('DOMContentLoaded', function () {
     return [i, i, color];
   });
 
-  console.log("number of faces: ", faceColors.length);
+  console.log("Number of faces:", faceColors.length);
 
   // Apply all face color updates in a single call
   goldberg.setGoldbergFaceColors(faceColors);
+
+  const getFaceNbFromFacetId = ((faceId) => {
+    if (faceId < 36) { // First 12 Goldberg faces are pentagons formed by 3 triangles each
+      return Math.floor(faceId / 3);
+    } else { // Remaining Goldberg faces are hexagons formed by 4 triangles each
+      return Math.floor((faceId - 36) / 4) + 12;
+    }
+  });
+
+  // Event listener for mouse clicks on the Goldberg polyhedron
+  scene.onPointerDown = function (evt, pickResult) {
+    // Check if it's the left button mouse click
+    if (evt.button !== 0) {
+      return;
+    }
+    // Check if we hit the goldberg mesh
+    if (pickResult.hit && pickResult.pickedMesh === goldberg) {
+      const faceId = pickResult.faceId;
+      const f = getFaceNbFromFacetId(faceId);
+      goldberg.setGoldbergFaceColors([[f, f, colorRed]]);
+    }
+  };
 
   engine.runRenderLoop(function () {
     scene.render();
