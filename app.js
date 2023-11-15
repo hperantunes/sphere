@@ -56,51 +56,45 @@ window.addEventListener('DOMContentLoaded', function () {
     }
   };
 
-  const createScene = function () {
-    const scene = new BABYLON.Scene(engine);
+  const scene = new BABYLON.Scene(engine);
 
-    const light = new BABYLON.HemisphericLight("HemiLight", new BABYLON.Vector3(0, 1, 0), scene);
+  const light = new BABYLON.HemisphericLight("HemiLight", new BABYLON.Vector3(0, 1, 0), scene);
 
-    // Set the light intensity
-    light.intensity = 1; // 0.7: Adjust as needed
+  // Set the light intensity
+  light.intensity = 1; // 0.7: Adjust as needed
 
-    // Use similar colors for the sky and ground to ensure uniform lighting
-    light.groundColor = new BABYLON.Color3(1, 1, 1); // 0.75, 0.75, 0.75: Soft grey
-    light.diffuse = new BABYLON.Color3(1, 1, 1); // 1, 1, 1: Bright white
-    light.specular = new BABYLON.Color3(.2, .2, .2); // 0, 0, 0: No specular highlights
+  // Use similar colors for the sky and ground to ensure uniform lighting
+  light.groundColor = new BABYLON.Color3(1, 1, 1); // 0.75, 0.75, 0.75: Soft grey
+  light.diffuse = new BABYLON.Color3(1, 1, 1); // 1, 1, 1: Bright white
+  light.specular = new BABYLON.Color3(.2, .2, .2); // 0, 0, 0: No specular highlights
 
-    const camera = new BABYLON.ArcRotateCamera("camera1", -Math.PI / 2, Math.PI / 2.2, 3, new BABYLON.Vector3(0, 0, 0), scene);
+  const camera = new BABYLON.ArcRotateCamera("camera1", -Math.PI / 2, Math.PI / 2.2, 3, new BABYLON.Vector3(0, 0, 0), scene);
 
-    camera.attachControl(canvas, true);
+  camera.attachControl(canvas, true);
 
-    // Slow down the zoom speed
-    camera.wheelPrecision = 50; // The default value is 3. Adjust as needed for your scenario
+  // Slow down the zoom speed
+  camera.wheelPrecision = 50; // The default value is 3. Adjust as needed for your scenario
 
-    // Prevent the camera from zooming inside the mesh
-    camera.lowerRadiusLimit = 2; // Set this to the radius of your mesh or slightly more
+  // Prevent the camera from zooming inside the mesh
+  camera.lowerRadiusLimit = 2; // Set this to the radius of your mesh or slightly more
 
-    // Adjust the camera's angular sensibility for smoother drag rotation
-    camera.angularSensibilityX = 2500; // Default is usually 1000, increase if the rotation is too fast
-    camera.angularSensibilityY = 2500; // Same as above, adjust as needed
+  // Adjust the camera's angular sensibility for smoother drag rotation
+  camera.angularSensibilityX = 2500; // Default is usually 1000, increase if the rotation is too fast
+  camera.angularSensibilityY = 2500; // Same as above, adjust as needed
 
-    const goldberg = BABYLON.MeshBuilder.CreateGoldberg("g", { m: m, n: n, size: 1 });
+  const goldberg = BABYLON.MeshBuilder.CreateGoldberg("g", { m: m, n: n, size: 1 });
 
-    // Create an array to hold all face color data
-    const faceColors = goldberg.goldbergData.faceCenters.map((face, i) => {
-      const noise = getNoise(face._x, face._y, face._z, frequency, octaves, persistence);
-      const color = getColor(noise);
-      return [i, i, color];
-    });
+  // Create an array to hold all face color data
+  const faceColors = goldberg.goldbergData.faceCenters.map((face, i) => {
+    const noise = getNoise(face._x, face._y, face._z, frequency, octaves, persistence);
+    const color = getColor(noise);
+    return [i, i, color];
+  });
 
-    console.log("number of faces: ", faceColors.length);
+  console.log("number of faces: ", faceColors.length);
 
-    // Apply all face color updates in a single call
-    goldberg.setGoldbergFaceColors(faceColors);
-
-    return scene;
-  };
-
-  var scene = createScene();
+  // Apply all face color updates in a single call
+  goldberg.setGoldbergFaceColors(faceColors);
 
   engine.runRenderLoop(function () {
     scene.render();
