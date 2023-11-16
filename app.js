@@ -2,7 +2,7 @@ window.addEventListener('DOMContentLoaded', function () {
   var canvas = document.getElementById('renderCanvas');
   var engine = new BABYLON.Engine(canvas, true);
 
-  let m = 20;
+  let m = 6;
   let n = 0;
 
   // Define noise parameters
@@ -126,12 +126,17 @@ window.addEventListener('DOMContentLoaded', function () {
   const largerGoldberg = BABYLON.MeshBuilder.CreateGoldberg("g2", { m: m, n: n, size: largerSize }, scene);
   largerGoldberg.isPickable = false; // Make it non-pickable if you do not want to interact with it
 
+  // Optimize mesh by reducing the number of calculations
+  largerGoldberg.freezeWorldMatrix();
+  largerGoldberg.doNotSyncBoundingInfo = true;
+
   // Create a multi-material
   const multiMat = new BABYLON.MultiMaterial("multi", scene);
 
   // Create two materials to be used in the multi-material
   const semiTransparentMaterial = new BABYLON.StandardMaterial("semiTransparent", scene);
-  semiTransparentMaterial.alpha = 0.2;
+  semiTransparentMaterial.alpha = 0.1;
+  semiTransparentMaterial.backFaceCulling = false;
 
   const fullyTransparentMaterial = new BABYLON.StandardMaterial("fullyTransparent", scene);
   fullyTransparentMaterial.alpha = 0;
@@ -162,7 +167,7 @@ window.addEventListener('DOMContentLoaded', function () {
           5,
           largerGoldberg
         ));
-      }  
+      }
     } else {
       const start = (index - 12) * 12 + 108;
       for (let i = start; i < start + 12; i += 6) {
@@ -174,7 +179,7 @@ window.addEventListener('DOMContentLoaded', function () {
           6,
           largerGoldberg
         ));
-      }  
+      }
     }
   });
 
