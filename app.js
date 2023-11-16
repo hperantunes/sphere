@@ -2,7 +2,7 @@ window.addEventListener('DOMContentLoaded', function () {
   var canvas = document.getElementById('renderCanvas');
   var engine = new BABYLON.Engine(canvas, true);
 
-  let m = 6;
+  let m = 12;
   let n = 0;
 
   // Define noise parameters
@@ -66,7 +66,7 @@ window.addEventListener('DOMContentLoaded', function () {
   // Use similar colors for the sky and ground to ensure uniform lighting
   light.groundColor = new BABYLON.Color3(1, 1, 1); // 0.75, 0.75, 0.75: Soft grey
   light.diffuse = new BABYLON.Color3(1, 1, 1); // 1, 1, 1: Bright white
-  light.specular = new BABYLON.Color3(.2, .2, .2); // 0, 0, 0: No specular highlights
+  light.specular = new BABYLON.Color3(1, 1, 1); // 0, 0, 0: No specular highlights
 
   const camera = new BABYLON.ArcRotateCamera("camera1", -Math.PI / 2, Math.PI / 2.2, 3, new BABYLON.Vector3(0, 0, 0), scene);
 
@@ -154,7 +154,7 @@ window.addEventListener('DOMContentLoaded', function () {
   console.log("largerGoldberg.getTotalVertices()", verticesCount)
 
   largerGoldberg.goldbergData.faceCenters.forEach((face, index) => {
-    const materialIndex = index % 2 == 0 ? 0 : 1; // Use your own logic in `someCondition`
+    const materialIndex = Math.floor(Math.random() * 3) < 1 ? 0 : 1; // Use your own logic in `someCondition`
 
     if (index < 12) {
       const start = index * 9;
