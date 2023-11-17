@@ -107,8 +107,8 @@ window.addEventListener('DOMContentLoaded', function () {
 
   // Event listener for mouse clicks on the Goldberg polyhedron
   scene.onPointerDown = function (evt, pickResult) {
-    // Check if it's the left button mouse click
-    if (evt.button !== 0) {
+    // Middle-mouse click
+    if (evt.button !== 1) {
       return;
     }
     // Check if we hit the goldberg mesh
@@ -135,7 +135,7 @@ window.addEventListener('DOMContentLoaded', function () {
 
   // Create two materials to be used in the multi-material
   const semiTransparentMaterial = new BABYLON.StandardMaterial("semiTransparent", scene);
-  semiTransparentMaterial.alpha = 0.1;
+  semiTransparentMaterial.alpha = 0.5;
   semiTransparentMaterial.backFaceCulling = false;
 
   const fullyTransparentMaterial = new BABYLON.StandardMaterial("fullyTransparent", scene);
@@ -154,7 +154,7 @@ window.addEventListener('DOMContentLoaded', function () {
   console.log("largerGoldberg.getTotalVertices()", verticesCount)
 
   largerGoldberg.goldbergData.faceCenters.forEach((face, index) => {
-    const materialIndex = Math.floor(Math.random() * 3) < 1 ? 0 : 1; // Use your own logic in `someCondition`
+    const materialIndex = Math.floor(Math.random() * 4) < 1 ? 0 : 1; // Use your own logic in `someCondition`
 
     if (index < 12) {
       const start = index * 9;
