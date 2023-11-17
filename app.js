@@ -117,6 +117,15 @@ window.addEventListener('DOMContentLoaded', function () {
     }
   };
 
+  const cloudShaderMaterial = new BABYLON.ShaderMaterial("cloudShader", scene, "./shaders/clouds", {
+    attributes: ["position", "normal", "uv"],
+    uniforms: ["world", "worldView", "worldViewProjection", "view", "projection"]
+  });
+  cloudShaderMaterial.backFaceCulling = false;
+
+  const cloudMesh = BABYLON.MeshBuilder.CreateSphere("cloudMesh", { diameter: 2.2 }, scene); // Adjust the diameter as needed
+  cloudMesh.material = cloudShaderMaterial;
+
   engine.runRenderLoop(function () {
     scene.render();
   });
