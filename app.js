@@ -119,6 +119,33 @@ window.addEventListener('DOMContentLoaded', function () {
     }
   };
 
+  var cloudSpriteManager = new BABYLON.SpriteManager("cloudSpriteManager", "cloudTexture.png", 2000, { width: 512, height: 512 }, scene);
+
+  for (var i = 0; i < 200; i++) {
+    var cloudSprite = new BABYLON.Sprite("cloud", cloudSpriteManager);
+    cloudSprite.position = new BABYLON.Vector3(Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1)
+      .normalize()
+      .scale(1.1);
+    cloudSprite.size = 0.1;
+}
+
+  async function loadShader() {
+    var shaderCode = await fetch('clouds.fragment.fx').then(response => response.text());
+
+    var cloudMaterial = new BABYLON.ShaderMaterial("cloudShader", scene, {
+      vertex: "default",
+      fragment: "cloudShader",
+    }, {
+      attributes: ["position", "normal", "uv"],
+      uniforms: ["world", "worldView", "worldViewProjection", "view", "projection"]
+    });
+    BABYLON.Effect.ShadersStore["cloudShader"] = shaderCode;
+
+    cloudSpriteManager.material = cloudMaterial;
+  }
+
+  loadShader();
+
   engine.runRenderLoop(function () {
     scene.render();
   });
