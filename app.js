@@ -119,19 +119,6 @@ window.addEventListener('DOMContentLoaded', function () {
     }
   };
 
-  // Create a shader material
-  const gradientShaderMaterial = new BABYLON.ShaderMaterial("gradientShader", scene, "./shader/gradient", {
-    attributes: ["position", "normal", "uv"],
-    uniforms: ["world", "worldView", "worldViewProjection", "view", "projection"],
-  });
-
-  // Create a larger sphere and move it to a different position
-  const sphere = BABYLON.MeshBuilder.CreateSphere("sphere", { diameter: 2.2 }, scene);
-  //sphere.position = new BABYLON.Vector3(0.5, 0.5, 0.5);
-
-  // Apply the shader material to the sphere
-  sphere.material = gradientShaderMaterial;
-
   engine.runRenderLoop(function () {
     scene.render();
   });
