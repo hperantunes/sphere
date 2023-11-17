@@ -119,69 +119,18 @@ window.addEventListener('DOMContentLoaded', function () {
     }
   };
 
-  // Size of the second Goldberg polyhedron, slightly larger than the first
-  const largerSize = 1.1;
-
-  // Create the second Goldberg polyhedron
-  const largerGoldberg = BABYLON.MeshBuilder.CreateGoldberg("g2", { m: m, n: n, size: largerSize }, scene);
-  largerGoldberg.isPickable = false; // Make it non-pickable if you do not want to interact with it
-
-  // Optimize mesh by reducing the number of calculations
-  largerGoldberg.freezeWorldMatrix();
-  largerGoldberg.doNotSyncBoundingInfo = true;
-
-  // Create a multi-material
-  const multiMat = new BABYLON.MultiMaterial("multi", scene);
-
-  // Create two materials to be used in the multi-material
-  const semiTransparentMaterial = new BABYLON.StandardMaterial("semiTransparent", scene);
-  semiTransparentMaterial.alpha = 0.5;
-  semiTransparentMaterial.backFaceCulling = false;
-
-  const fullyTransparentMaterial = new BABYLON.StandardMaterial("fullyTransparent", scene);
-  fullyTransparentMaterial.alpha = 0;
-
-  // Add materials to the multi-material
-  multiMat.subMaterials.push(semiTransparentMaterial);
-  multiMat.subMaterials.push(fullyTransparentMaterial);
-
-  // Assign the material to the second polyhedron
-  largerGoldberg.material = multiMat;
-
-  largerGoldberg.subMeshes = [];
-
-  const verticesCount = largerGoldberg.getTotalVertices();
-  console.log("largerGoldberg.getTotalVertices()", verticesCount)
-
-  largerGoldberg.goldbergData.faceCenters.forEach((face, index) => {
-    const materialIndex = Math.floor(Math.random() * 4) < 1 ? 0 : 1; // Use your own logic in `someCondition`
-
-    if (index < 12) {
-      const start = index * 9;
-      for (let i = start; i < start + 9; i += 3) {
-        largerGoldberg.subMeshes.push(new BABYLON.SubMesh(
-          materialIndex,
-          0,
-          verticesCount,
-          i,
-          5,
-          largerGoldberg
-        ));
-      }
-    } else {
-      const start = (index - 12) * 12 + 108;
-      for (let i = start; i < start + 12; i += 6) {
-        largerGoldberg.subMeshes.push(new BABYLON.SubMesh(
-          materialIndex,
-          0,
-          verticesCount,
-          i,
-          6,
-          largerGoldberg
-        ));
-      }
-    }
+  // Create a shader material
+  const gradientShaderMaterial = new BABYLON.ShaderMaterial("gradientShader", scene, "./shader/gradient", {
+    attributes: ["position", "normal", "uv"],
+    uniforms: ["world", "worldView", "worldViewProjection", "view", "projection"],
   });
+
+  // Create a larger sphere and move it to a different position
+  const sphere = BABYLON.MeshBuilder.CreateSphere("sphere", { diameter: 2.2 }, scene);
+  //sphere.position = new BABYLON.Vector3(0.5, 0.5, 0.5);
+
+  // Apply the shader material to the sphere
+  sphere.material = gradientShaderMaterial;
 
   engine.runRenderLoop(function () {
     scene.render();
@@ -192,5 +141,5 @@ window.addEventListener('DOMContentLoaded', function () {
   });
 
   this.window.goldberg = goldberg;
-  this.window.largerGoldberg = largerGoldberg;
+
 });
