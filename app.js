@@ -2,7 +2,7 @@ window.addEventListener('DOMContentLoaded', function () {
   var canvas = document.getElementById('renderCanvas');
   var engine = new BABYLON.Engine(canvas, true);
 
-  let m = 12;
+  let m = 100;
   let n = 0;
 
   // Define noise parameters
@@ -92,8 +92,6 @@ window.addEventListener('DOMContentLoaded', function () {
     return [i, i, color];
   });
 
-  console.log("Number of faces:", faceColors.length);
-
   // Apply all face color updates in a single call
   goldberg.setGoldbergFaceColors(faceColors);
 
@@ -119,70 +117,6 @@ window.addEventListener('DOMContentLoaded', function () {
     }
   };
 
-  // Size of the second Goldberg polyhedron, slightly larger than the first
-  const largerSize = 1.1;
-
-  // Create the second Goldberg polyhedron
-  const largerGoldberg = BABYLON.MeshBuilder.CreateGoldberg("g2", { m: m, n: n, size: largerSize }, scene);
-  largerGoldberg.isPickable = false; // Make it non-pickable if you do not want to interact with it
-
-  // Optimize mesh by reducing the number of calculations
-  largerGoldberg.freezeWorldMatrix();
-  largerGoldberg.doNotSyncBoundingInfo = true;
-
-  // Create a multi-material
-  const multiMat = new BABYLON.MultiMaterial("multi", scene);
-
-  // Create two materials to be used in the multi-material
-  const semiTransparentMaterial = new BABYLON.StandardMaterial("semiTransparent", scene);
-  semiTransparentMaterial.alpha = 0.5;
-  semiTransparentMaterial.backFaceCulling = false;
-
-  const fullyTransparentMaterial = new BABYLON.StandardMaterial("fullyTransparent", scene);
-  fullyTransparentMaterial.alpha = 0;
-
-  // Add materials to the multi-material
-  multiMat.subMaterials.push(semiTransparentMaterial);
-  multiMat.subMaterials.push(fullyTransparentMaterial);
-
-  // Assign the material to the second polyhedron
-  largerGoldberg.material = multiMat;
-
-  largerGoldberg.subMeshes = [];
-
-  const verticesCount = largerGoldberg.getTotalVertices();
-  console.log("largerGoldberg.getTotalVertices()", verticesCount)
-
-  largerGoldberg.goldbergData.faceCenters.forEach((face, index) => {
-    const materialIndex = Math.floor(Math.random() * 4) < 1 ? 0 : 1; // Use your own logic in `someCondition`
-
-    if (index < 12) {
-      const start = index * 9;
-      for (let i = start; i < start + 9; i += 3) {
-        largerGoldberg.subMeshes.push(new BABYLON.SubMesh(
-          materialIndex,
-          0,
-          verticesCount,
-          i,
-          5,
-          largerGoldberg
-        ));
-      }
-    } else {
-      const start = (index - 12) * 12 + 108;
-      for (let i = start; i < start + 12; i += 6) {
-        largerGoldberg.subMeshes.push(new BABYLON.SubMesh(
-          materialIndex,
-          0,
-          verticesCount,
-          i,
-          6,
-          largerGoldberg
-        ));
-      }
-    }
-  });
-
   engine.runRenderLoop(function () {
     scene.render();
   });
@@ -191,6 +125,6 @@ window.addEventListener('DOMContentLoaded', function () {
     engine.resize();
   });
 
+  console.log("Number of faces:", goldberg.goldbergData.faceCenters.length);
   this.window.goldberg = goldberg;
-  this.window.largerGoldberg = largerGoldberg;
 });
