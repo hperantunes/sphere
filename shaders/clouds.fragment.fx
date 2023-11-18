@@ -1,4 +1,8 @@
 varying vec3 vPosition;
+uniform float offset;
+uniform float fastTime;
+uniform float slowTime;
+
 float hash(float n) {
     return fract(sin(n) * 43758.5453);
 }
@@ -79,7 +83,20 @@ float snoise(vec3 v){
 }
 
 void main(void) {
-    float n = snoise(vPosition * 2.5);
+    vec3 position = vPosition * 0.5; // smaller number generates fewer and larger clouds
+    position.x -= fastTime; // rotate quickly on the x-axis to the right
+
+    // tilt the sphere to the left about 15 degrees
+    float tiltAngle = radians(15.0);
+    float sTilt = sin(tiltAngle);
+    float cTilt = cos(tiltAngle);
+    float yTilt = position.y * cTilt - position.z * sTilt;
+    float zTilt = position.y * sTilt + position.z * cTilt;
+    position.y = yTilt;
+    position.z = zTilt;
+
+    position.y *= 10.0; // elongate along the y-axis
+    float n = snoise(position + slowTime + offset); // change slowly over time and start differently each time
     if (n < 0.5) {
         discard; // Discard fragments with noise value below 0.5
     } else {

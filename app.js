@@ -121,12 +121,19 @@ window.addEventListener('DOMContentLoaded', function () {
     attributes: ["position", "normal", "uv"],
     uniforms: ["world", "worldView", "worldViewProjection", "view", "projection"]
   });
+
+  const offset = Math.random() * 1000; // generate a random offset
+  cloudShaderMaterial.setFloat("offset", offset);
   cloudShaderMaterial.backFaceCulling = false;
 
-  const cloudMesh = BABYLON.MeshBuilder.CreateSphere("cloudMesh", { diameter: 2.2 }, scene); // Adjust the diameter as needed
+  const cloudMesh = BABYLON.MeshBuilder.CreateSphere("cloudMesh", { diameter: 2.1 }, scene); // Adjust the diameter as needed
   cloudMesh.material = cloudShaderMaterial;
+  cloudMesh.rotation.y = BABYLON.Tools.ToRadians(90);
 
   engine.runRenderLoop(function () {
+    let time = performance.now() * 0.000001;
+    cloudShaderMaterial.setFloat("fastTime", time);
+    cloudShaderMaterial.setFloat("slowTime", time * 0.1);
     scene.render();
   });
 
