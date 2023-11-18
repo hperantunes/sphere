@@ -57,6 +57,7 @@ window.addEventListener('DOMContentLoaded', function () {
   };
 
   const scene = new BABYLON.Scene(engine);
+  scene.clearColor = new BABYLON.Color4(0, 0, 0, 1); // RGBA values
 
   const light = new BABYLON.HemisphericLight("HemiLight", new BABYLON.Vector3(0, 1, 0), scene);
 
@@ -116,6 +117,23 @@ window.addEventListener('DOMContentLoaded', function () {
       goldberg.setGoldbergFaceColors([[f, f, colorRed]]);
     }
   };
+
+  var atmosphereMaterial = new BABYLON.StandardMaterial("atmosphereMaterial", scene);
+  atmosphereMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
+  atmosphereMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
+  atmosphereMaterial.emissiveColor = new BABYLON.Color3(1, 1, 1); // 0.5, 0.5, 1: blue
+  atmosphereMaterial.alpha = 0.05;
+
+  var fresnelParameters = new BABYLON.FresnelParameters();
+  fresnelParameters.bias = 0.6;
+  fresnelParameters.power = 4;
+  fresnelParameters.leftColor = BABYLON.Color3.White();
+  fresnelParameters.rightColor = BABYLON.Color3.Blue();
+
+  atmosphereMaterial.emissiveFresnelParameters = fresnelParameters;
+
+  const atmosphereMesh = BABYLON.MeshBuilder.CreateSphere("atmosphereMesh", { diameter: 2.15 }, scene); // Adjust the diameter so it's slightly larger than the planet
+  atmosphereMesh.material = atmosphereMaterial;
 
   const cloudShaderMaterial = new BABYLON.ShaderMaterial("cloudShader", scene, "./shaders/clouds", {
     attributes: ["position", "normal", "uv"],
