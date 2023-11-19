@@ -2,28 +2,53 @@ window.addEventListener('DOMContentLoaded', function () {
   var canvas = document.getElementById('renderCanvas');
   var engine = new BABYLON.Engine(canvas, true);
 
-  let m = 100;
-  let n = 0;
+  const terrain = {
+    mesh: {
+      m: 100,
+      n: 0,
+      diameter: 2,
+      isPickable: true
+    },
+    noise: {
+      frequency: 0.5,
+      octaves: 8,
+      persistence: 0.6
+    },
+    colors: {
+      land1: BABYLON.Color4.FromHexString("#558747FF"),
+      land2: BABYLON.Color4.FromHexString("#6E876EFF"),
+      land3: BABYLON.Color4.FromHexString("#576348FF"),
+      land4: BABYLON.Color4.FromHexString("#362211FF"),
+      land5: BABYLON.Color4.FromHexString("#1C0D13FF"),
+      water1: BABYLON.Color4.FromHexString("#090A59FF"),
+      water2: BABYLON.Color4.FromHexString("#0A0B46FF"),
+      ice1: BABYLON.Color4.FromHexString("#E3F2FDFF"),
+      highlight1: BABYLON.Color4.FromHexString("#F44336FF")
+    }
+  };
 
-  // Define noise parameters
-  const frequency = 0.5;
-  const octaves = 8;
-  const persistence = 0.6;
-
-  const colorWater2 = BABYLON.Color4.FromHexString("#0A0B46FF");
-  const colorWater1 = BABYLON.Color4.FromHexString("#090A59FF");
-  const colorLand1 = BABYLON.Color4.FromHexString("#558747FF");
-  const colorLand2 = BABYLON.Color4.FromHexString("#6E876EFF");
-  const colorLand3 = BABYLON.Color4.FromHexString("#576348FF");
-  const colorLand4 = BABYLON.Color4.FromHexString("#362211FF");
-  const colorLand5 = BABYLON.Color4.FromHexString("#1C0D13FF");
-  const colorIce = BABYLON.Color4.FromHexString("#E3F2FDFF");
-  const colorRed = BABYLON.Color4.FromHexString("#F44336FF");
-  const colorBlack = BABYLON.Color4.FromHexString("#000000FF");
+  const clouds = {
+    mesh: {
+      diameter: 2.1,
+      yRotation: BABYLON.Tools.ToRadians(90)
+    },
+    shader: {
+      path: "./shaders/clouds",
+      noise: {
+        offset: Math.random() * 1000, // generate a random offset
+        frequency: 0.4,
+        octaves: 4,
+        persistence: 0.6
+      },
+      fastTime: Math.pow(10, -6),
+      slowTime: Math.pow(10, -7)
+    }
+  };
 
   const simplex = new SimplexNoise();
 
-  const getNoise = (x, y, z, freq, octaves, persistence) => {
+  const getNoise = (x, y, z, { frequency, octaves, persistence }) => {
+    let freq = frequency;
     let value = 0;
     let amplitude = 1;
     let maxValue = 0; // Used for normalizing result to -1.0 - 1.0
@@ -36,23 +61,23 @@ window.addEventListener('DOMContentLoaded', function () {
     return value / maxValue;
   };
 
-  const getColor = (noise) => {
-    if (noise > 0.6) {
-      return colorIce;
-    } else if (noise > 0.55) {
-      return colorLand5;
+  const getTerrainColor = (noise, colors) => {
+    if (noise > 0.55) {
+      return colors.ice1;
+    } else if (noise > 0.5) {
+      return colors.land5;
     } else if (noise > 0.45) {
-      return colorLand4;
-    } else if (noise > 0.35) {
-      return colorLand3;
-    } else if (noise > 0.25) {
-      return colorLand2;
-    } else if (noise > 0.1) {
-      return colorLand1;
+      return colors.land4;
+    } else if (noise > 0.3) {
+      return colors.land3;
+    } else if (noise > 0.15) {
+      return colors.land2;
     } else if (noise > 0) {
-      return colorWater1;
+      return colors.land1;
+    } else if (noise > -0.1) {
+      return colors.water1;
     } else {
-      return colorWater2;
+      return colors.water2;
     }
   };
 
@@ -83,20 +108,24 @@ window.addEventListener('DOMContentLoaded', function () {
   camera.angularSensibilityX = 2500; // Default is usually 1000, increase if the rotation is too fast
   camera.angularSensibilityY = 2500; // Same as above, adjust as needed
 
-  const goldberg = BABYLON.MeshBuilder.CreateGoldberg("g", { m: m, n: n, size: 1 });
-  goldberg.isPickable = true;  // Ensure the mesh can be picked
+  const goldbergMesh = BABYLON.MeshBuilder.CreateGoldberg("g", {
+    m: terrain.mesh.m,
+    n: terrain.mesh.n,
+    diameter: terrain.mesh.diameter
+  });
+  goldbergMesh.isPickable = terrain.mesh.isPickable;  // Ensure the mesh can be picked
 
   // Create an array to hold all face color data
-  const faceColors = goldberg.goldbergData.faceCenters.map((face, i) => {
-    const noise = getNoise(face._x, face._y, face._z, frequency, octaves, persistence);
-    const color = getColor(noise);
+  const faceColors = goldbergMesh.goldbergData.faceCenters.map((face, i) => {
+    const noise = getNoise(face._x, face._y, face._z, terrain.noise);
+    const color = getTerrainColor(noise, terrain.colors);
     return [i, i, color];
   });
 
   // Apply all face color updates in a single call
-  goldberg.setGoldbergFaceColors(faceColors);
+  goldbergMesh.setGoldbergFaceColors(faceColors);
 
-  const getFaceNbFromFacetId = ((faceId) => {
+  const getFaceNumberFromFacetId = ((faceId) => {
     if (faceId < 36) { // First 12 Goldberg faces are pentagons formed by 3 triangles each
       return Math.floor(faceId / 3);
     } else { // Remaining Goldberg faces are hexagons formed by 4 triangles each
@@ -111,50 +140,32 @@ window.addEventListener('DOMContentLoaded', function () {
       return;
     }
     // Check if we hit the goldberg mesh
-    if (pickResult.hit && pickResult.pickedMesh === goldberg) {
+    if (pickResult.hit && pickResult.pickedMesh === goldbergMesh) {
       const faceId = pickResult.faceId;
-      const f = getFaceNbFromFacetId(faceId);
-      goldberg.setGoldbergFaceColors([[f, f, colorRed]]);
+      const f = getFaceNumberFromFacetId(faceId);
+      goldbergMesh.setGoldbergFaceColors([[f, f, terrain.color.highlight1]]);
     }
   };
 
-  var atmosphereMaterial = new BABYLON.StandardMaterial("atmosphereMaterial", scene);
-  atmosphereMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
-  atmosphereMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
-  atmosphereMaterial.emissiveColor = new BABYLON.Color3(1, 1, 1); // 0.5, 0.5, 1: blue
-  atmosphereMaterial.alpha = 0.05;
-
-  var fresnelParameters = new BABYLON.FresnelParameters();
-  fresnelParameters.bias = 0.6;
-  fresnelParameters.power = 4;
-  fresnelParameters.leftColor = BABYLON.Color3.White();
-  fresnelParameters.rightColor = BABYLON.Color3.Blue();
-
-  atmosphereMaterial.emissiveFresnelParameters = fresnelParameters;
-
-  const atmosphereMesh = BABYLON.MeshBuilder.CreateSphere("atmosphereMesh", { diameter: 2.15 }, scene); // Adjust the diameter so it's slightly larger than the planet
-  atmosphereMesh.material = atmosphereMaterial;
-
-  const cloudShaderMaterial = new BABYLON.ShaderMaterial("cloudShader", scene, "./shaders/clouds", {
+  const cloudsShaderMaterial = new BABYLON.ShaderMaterial("cloudsShader", scene, clouds.shader.path, {
     attributes: ["position", "normal", "uv"],
     uniforms: ["world", "worldView", "worldViewProjection", "view", "projection"]
   });
 
-  const offset = Math.random() * 1000; // generate a random offset
-  cloudShaderMaterial.setFloat("offset", offset);
-  cloudShaderMaterial.setFloat("frequency", 0.4);
-  cloudShaderMaterial.setInt("octaves", 4);
-  cloudShaderMaterial.setFloat("persistence", 0.6);
-  cloudShaderMaterial.backFaceCulling = false;
+  cloudsShaderMaterial.setFloat("offset", clouds.shader.noise.offset);
+  cloudsShaderMaterial.setFloat("frequency", clouds.shader.noise.frequency);
+  cloudsShaderMaterial.setInt("octaves", clouds.shader.noise.octaves);
+  cloudsShaderMaterial.setFloat("persistence", clouds.shader.noise.persistence);
+  cloudsShaderMaterial.backFaceCulling = false;
 
-  const cloudMesh = BABYLON.MeshBuilder.CreateSphere("cloudMesh", { diameter: 2.1 }, scene); // Adjust the diameter as needed
-  cloudMesh.material = cloudShaderMaterial;
-  cloudMesh.rotation.y = BABYLON.Tools.ToRadians(90);
+  const cloudsMesh = BABYLON.MeshBuilder.CreateSphere("cloudsMesh", { diameter: clouds.mesh.diameter }, scene); // Adjust the diameter as needed
+  cloudsMesh.material = cloudsShaderMaterial;
+  cloudsMesh.rotation.y = clouds.mesh.yRotation;
 
   engine.runRenderLoop(function () {
-    let time = performance.now() * 0.000001;
-    cloudShaderMaterial.setFloat("fastTime", time);
-    cloudShaderMaterial.setFloat("slowTime", time * 0.1);
+    let time = performance.now();
+    cloudsShaderMaterial.setFloat("fastTime", time * clouds.shader.fastTime);
+    cloudsShaderMaterial.setFloat("slowTime", time * clouds.shader.slowTime);
     scene.render();
   });
 
@@ -162,6 +173,6 @@ window.addEventListener('DOMContentLoaded', function () {
     engine.resize();
   });
 
-  console.log("Number of faces:", goldberg.goldbergData.faceCenters.length);
-  this.window.goldberg = goldberg;
+  console.log("Number of faces:", goldbergMesh.goldbergData.faceCenters.length);
+  this.window.goldberg = goldbergMesh;
 });
