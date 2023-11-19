@@ -26,6 +26,9 @@ window.addEventListener('DOMContentLoaded', function () {
       water2: BABYLON.Color4.FromHexString("#0A0B46FF"),
       ice1: BABYLON.Color4.FromHexString("#E3F2FDFF"),
       highlight1: BABYLON.Color4.FromHexString("#F44336FF")
+    },
+    shader: {
+      path: "./shaders/planet"
     }
   };
 
@@ -89,7 +92,8 @@ window.addEventListener('DOMContentLoaded', function () {
   const scene = new BABYLON.Scene(engine);
   scene.clearColor = new BABYLON.Color4(0, 0, 0, 1); // RGBA values
 
-  const light = new BABYLON.HemisphericLight("HemiLight", new BABYLON.Vector3(0, 1, 0), scene);
+  // Create a light
+  var light = new BABYLON.PointLight("light", new BABYLON.Vector3(100, 100, 0), scene);
 
   // Set the light intensity
   light.intensity = 1; // 0.7: Adjust as needed
@@ -100,6 +104,11 @@ window.addEventListener('DOMContentLoaded', function () {
   light.specular = new BABYLON.Color3(1, 1, 1); // 0, 0, 0: No specular highlights
 
   const camera = new BABYLON.ArcRotateCamera("camera1", -Math.PI / 2, Math.PI / 2, 2.75, new BABYLON.Vector3(0, 0, 0), scene);
+
+  // Set the target of the camera to the center of the scene
+  camera.setTarget(BABYLON.Vector3.Zero());
+
+  // Attach the camera to the canvas
   camera.attachControl(canvas, true);
 
   // Slow down the zoom speed
@@ -112,17 +121,25 @@ window.addEventListener('DOMContentLoaded', function () {
   camera.angularSensibilityX = 2500; // Default is usually 1000, increase if the rotation is too fast
   camera.angularSensibilityY = 2500; // Same as above, adjust as needed
 
-  const goldbergMesh = BABYLON.MeshBuilder.CreateGoldberg("g", {
+  const planetMesh = BABYLON.MeshBuilder.CreateGoldberg("g", {
     m: terrain.mesh.m,
     n: terrain.mesh.n,
     diameter: terrain.mesh.diameter
   });
-  goldbergMesh.isPickable = terrain.mesh.isPickable;
-  goldbergMesh.rotation.x = terrain.mesh.xRotation;
-  goldbergMesh.rotation.y = terrain.mesh.yRotation;
+  planetMesh.isPickable = terrain.mesh.isPickable;
+  planetMesh.rotation.x = terrain.mesh.xRotation;
+  planetMesh.rotation.y = terrain.mesh.yRotation;
+
+  const planetShaderMaterial = new BABYLON.ShaderMaterial("planetShader", scene, terrain.shader.path, {
+    attributes: ["position", "normal", "uv"],
+    uniforms: ["world", "worldView", "worldViewProjection", "view", "projection"]
+  });
+
+  planetShaderMaterial.setVector3("lightDirection", light.position);
+  planetMesh.material = planetShaderMaterial;
 
   // Create an array to hold all face color data
-  const faceColors = goldbergMesh.goldbergData.faceCenters.map((face, i) => {
+  const faceColors = planetMesh.goldbergData.faceCenters.map((face, i) => {
     // Highlight faces at the poles
     const latitude = face._y * 90;
     if (latitude > 89) {
@@ -137,7 +154,7 @@ window.addEventListener('DOMContentLoaded', function () {
   });
 
   // Apply all face color updates in a single call
-  goldbergMesh.setGoldbergFaceColors(faceColors);
+  planetMesh.setGoldbergFaceColors(faceColors);
 
   const getFaceNumberFromFacetId = ((faceId) => {
     if (faceId < 36) { // First 12 Goldberg faces are pentagons formed by 3 triangles each
@@ -172,10 +189,10 @@ window.addEventListener('DOMContentLoaded', function () {
       return;
     }
     // Check if we hit the goldberg mesh
-    if (pickResult.hit && pickResult.pickedMesh === goldbergMesh) {
+    if (pickResult.hit && pickResult.pickedMesh === planetMesh) {
       const faceId = pickResult.faceId;
       const f = getFaceNumberFromFacetId(faceId);
-      goldbergMesh.setGoldbergFaceColors([[f, f, terrain.colors.highlight1]]);
+      planetMesh.setGoldbergFaceColors([[f, f, terrain.colors.highlight1]]);
     }
   };
 
@@ -190,6 +207,6 @@ window.addEventListener('DOMContentLoaded', function () {
     engine.resize();
   });
 
-  console.log("Number of faces:", goldbergMesh.goldbergData.faceCenters.length);
-  this.window.goldberg = goldbergMesh;
+  console.log("Number of faces:", planetMesh.goldbergData.faceCenters.length);
+  this.window.goldberg = planetMesh;
 });
