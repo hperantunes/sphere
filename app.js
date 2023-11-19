@@ -136,54 +136,6 @@ window.addEventListener('DOMContentLoaded', function () {
   // Assign the material to the planetMesh
   planetMesh.material = planetMaterial;
 
-  // Define the number of plates and create an array to hold the center points
-  const numPlates = 10;
-  const plateCenters = Array.from({ length: numPlates }, () => ({
-    x: Math.random() * 2 - 1,
-    y: Math.random() * 2 - 1,
-    z: Math.random() * 2 - 1
-  }));
-
-  // Function to get the plate that a face belongs to
-  const getPlate = (x, y, z) => {
-    let minDistance = Infinity;
-    let plate = -1;
-
-    // Iterate over each plate
-    for (let i = 0; i < numPlates; i++) {
-      // Calculate the distance from the face to the center of the plate
-      const dx = x - plateCenters[i].x;
-      const dy = y - plateCenters[i].y;
-      const dz = z - plateCenters[i].z;
-      const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
-
-      // If this is the closest plate so far, update minDistance and plate
-      if (distance < minDistance) {
-        minDistance = distance;
-        plate = i;
-      }
-    }
-
-    return plate;
-  };
-
-  // Function to determine if a face is at the border of a plate
-  const isBorder = (i, { faceCenters, adjacentFaces }) => {
-    // Get the plate of this face
-    const plate = getPlate(faceCenters[i]._x, faceCenters[i]._y, faceCenters[i]._z);
-
-    // Check the plates of the neighboring faces
-    for (const neighbor of adjacentFaces[i]) {
-      if (getPlate(faceCenters[neighbor]._x, faceCenters[neighbor]._y, faceCenters[neighbor]._z) !== plate) {
-        // This face is at the border of a plate
-        return true;
-      }
-    }
-
-    // This face is not at the border of a plate
-    return false;
-  };
-
   // Create an array to hold all face color data
   const faceColors = planetMesh.goldbergData.faceCenters.map((face, i) => {
     // Highlight faces at the poles
@@ -198,12 +150,7 @@ window.addEventListener('DOMContentLoaded', function () {
     const elevationNoise = getNoise(face._x, face._y, face._z, terrain.noise, elevationSimplex);
 
     // Get the color based on the elevation
-    let color = getTerrainColorByElevation(elevationNoise, terrain.colors);
-
-    // If this face is at the border of a plate, change its color
-    if (isBorder(i, planetMesh.goldbergData)) {
-      color = new BABYLON.Color3.Purple();
-    }
+    const color = getTerrainColorByElevation(elevationNoise, terrain.colors);
 
     return [i, i, color];
   });
@@ -240,7 +187,7 @@ window.addEventListener('DOMContentLoaded', function () {
   }
 
   // Event listener for mouse clicks on the Goldberg polyhedron
-  scene.onPointerDown = function (evt, pickResult) {
+  scene.onPointerDown = (evt, pickResult) => {
     // Middle-mouse click
     if (evt.button !== 1) {
       return;
@@ -253,17 +200,17 @@ window.addEventListener('DOMContentLoaded', function () {
     }
   };
 
-  engine.runRenderLoop(function () {
+  engine.runRenderLoop(() => {
     let time = performance.now();
     cloudsShaderMaterial.setFloat("fastTime", time * clouds.shader.fastTime);
     cloudsShaderMaterial.setFloat("slowTime", time * clouds.shader.slowTime);
     scene.render();
   });
 
-  window.addEventListener('resize', function () {
+  window.addEventListener('resize', () => {
     engine.resize();
   });
 
   console.log("Number of faces:", planetMesh.goldbergData.faceCenters.length);
-  this.window.goldberg = planetMesh;
+  this.window.planet = planetMesh;
 });
