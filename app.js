@@ -93,7 +93,7 @@ window.addEventListener('DOMContentLoaded', function () {
   const scene = new BABYLON.Scene(engine);
 
   // Create a light
-  const light = new BABYLON.HemisphericLight("HemiLight", new BABYLON.Vector3(100, 100, 0), scene);
+  const light = new BABYLON.HemisphericLight("HemiLight", new BABYLON.Vector3(1, 1, 0), scene);
 
   // Set the light intensity
   light.intensity = 1; // 0.7: Adjust as needed
@@ -136,6 +136,54 @@ window.addEventListener('DOMContentLoaded', function () {
   // Assign the material to the planetMesh
   planetMesh.material = planetMaterial;
 
+  // Define the number of plates and create an array to hold the center points
+  const numPlates = 10;
+  const plateCenters = Array.from({ length: numPlates }, () => ({
+    x: Math.random() * 2 - 1,
+    y: Math.random() * 2 - 1,
+    z: Math.random() * 2 - 1
+  }));
+
+  // Function to get the plate that a face belongs to
+  const getPlate = (x, y, z) => {
+    let minDistance = Infinity;
+    let plate = -1;
+
+    // Iterate over each plate
+    for (let i = 0; i < numPlates; i++) {
+      // Calculate the distance from the face to the center of the plate
+      const dx = x - plateCenters[i].x;
+      const dy = y - plateCenters[i].y;
+      const dz = z - plateCenters[i].z;
+      const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+      // If this is the closest plate so far, update minDistance and plate
+      if (distance < minDistance) {
+        minDistance = distance;
+        plate = i;
+      }
+    }
+
+    return plate;
+  };
+
+  // Function to determine if a face is at the border of a plate
+  const isBorder = (i, { faceCenters, adjacentFaces }) => {
+    // Get the plate of this face
+    const plate = getPlate(faceCenters[i]._x, faceCenters[i]._y, faceCenters[i]._z);
+
+    // Check the plates of the neighboring faces
+    for (const neighbor of adjacentFaces[i]) {
+      if (getPlate(faceCenters[neighbor]._x, faceCenters[neighbor]._y, faceCenters[neighbor]._z) !== plate) {
+        // This face is at the border of a plate
+        return true;
+      }
+    }
+
+    // This face is not at the border of a plate
+    return false;
+  };
+
   // Create an array to hold all face color data
   const faceColors = planetMesh.goldbergData.faceCenters.map((face, i) => {
     // Highlight faces at the poles
@@ -145,9 +193,18 @@ window.addEventListener('DOMContentLoaded', function () {
     } else if (latitude < -89.5) {
       return [i, i, BABYLON.Color3.Red()];
     }
+
     // Get the elevation noise value for the current face
     const elevationNoise = getNoise(face._x, face._y, face._z, terrain.noise, elevationSimplex);
-    const color = getTerrainColorByElevation(elevationNoise, terrain.colors);
+
+    // Get the color based on the elevation
+    let color = getTerrainColorByElevation(elevationNoise, terrain.colors);
+
+    // If this face is at the border of a plate, change its color
+    if (isBorder(i, planetMesh.goldbergData)) {
+      color = new BABYLON.Color3.Purple();
+    }
+
     return [i, i, color];
   });
 
