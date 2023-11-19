@@ -7,7 +7,9 @@ window.addEventListener('DOMContentLoaded', function () {
       m: 100,
       n: 0,
       diameter: 2,
-      isPickable: true
+      isPickable: true,
+      xRotation: BABYLON.Tools.ToRadians(-15),
+      yRotation: BABYLON.Tools.ToRadians(90),
     },
     noise: {
       frequency: 0.5,
@@ -116,9 +118,16 @@ window.addEventListener('DOMContentLoaded', function () {
     diameter: terrain.mesh.diameter
   });
   goldbergMesh.isPickable = terrain.mesh.isPickable;  // Ensure the mesh can be picked
+  goldbergMesh.rotation.x = terrain.mesh.xRotation;
+  goldbergMesh.rotation.y = terrain.mesh.yRotation;
 
   // Create an array to hold all face color data
   const faceColors = goldbergMesh.goldbergData.faceCenters.map((face, i) => {
+    const latitude = Math.abs(face._y * 90);
+    const isPolarRegion = latitude > 80;
+    if (isPolarRegion) {
+      return [i, i, terrain.colors.ice1];  
+    }
     const noise = getNoise(face._x, face._y, face._z, terrain.noise);
     const color = getTerrainColor(noise, terrain.colors);
     return [i, i, color];
