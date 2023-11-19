@@ -30,6 +30,7 @@ window.addEventListener('DOMContentLoaded', function () {
   const clouds = {
     mesh: {
       diameter: 2.1,
+      isPickable: false,
       yRotation: BABYLON.Tools.ToRadians(90)
     },
     shader: {
@@ -143,7 +144,7 @@ window.addEventListener('DOMContentLoaded', function () {
     if (pickResult.hit && pickResult.pickedMesh === goldbergMesh) {
       const faceId = pickResult.faceId;
       const f = getFaceNumberFromFacetId(faceId);
-      goldbergMesh.setGoldbergFaceColors([[f, f, terrain.color.highlight1]]);
+      goldbergMesh.setGoldbergFaceColors([[f, f, terrain.colors.highlight1]]);
     }
   };
 
@@ -160,6 +161,7 @@ window.addEventListener('DOMContentLoaded', function () {
 
   const cloudsMesh = BABYLON.MeshBuilder.CreateSphere("cloudsMesh", { diameter: clouds.mesh.diameter }, scene); // Adjust the diameter as needed
   cloudsMesh.material = cloudsShaderMaterial;
+  cloudsMesh.isPickable = clouds.mesh.isPickable;
   cloudsMesh.rotation.y = clouds.mesh.yRotation;
 
   engine.runRenderLoop(function () {
