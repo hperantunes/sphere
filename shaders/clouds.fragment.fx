@@ -78,8 +78,8 @@ uniform int octaves;
 uniform float persistence;
 
 uniform float offset;
-uniform float yElongate;
-uniform float yTiltAngle;
+uniform float horizontalElongate;
+uniform float verticalTiltAngle;
 
 uniform float fastTime;
 uniform float slowTime;
@@ -88,16 +88,16 @@ void main(void) {
   vec3 position = vPosition * frequency; // smaller number generates fewer and larger clouds
   position.x -= fastTime; // rotate quickly on the x-axis to the right
 
-  // tilt the sphere to the left about x degrees
-  float tiltAngle = radians(yTiltAngle);
+  // tilt the sphere to the left about the provided amount of degrees
+  float tiltAngle = radians(verticalTiltAngle - 90.0);
   float sTilt = sin(tiltAngle);
   float cTilt = cos(tiltAngle);
-  float yTilt = position.y * cTilt - position.z * sTilt;
-  float zTilt = position.y * sTilt + position.z * cTilt;
+  float yTilt = position.y * sTilt - position.z * cTilt;
+  float zTilt = position.y * cTilt + position.z * sTilt;
   position.y = yTilt;
   position.z = zTilt;
 
-  position.y *= yElongate; // elongate along the y-axis
+  position.y *= horizontalElongate; // elongate along the y-axis
 
   float n = 0.0;
   for (int i = 0; i < octaves; i++) {

@@ -8,8 +8,7 @@ window.addEventListener('DOMContentLoaded', function () {
       n: 0,
       diameter: 2,
       isPickable: true,
-      xRotation: BABYLON.Tools.ToRadians(-15),
-      yRotation: BABYLON.Tools.ToRadians(90),
+      verticalRotation: BABYLON.Tools.ToRadians(-15),
     },
     noise: {
       frequency: 0.5,
@@ -26,9 +25,6 @@ window.addEventListener('DOMContentLoaded', function () {
       water2: BABYLON.Color4.FromHexString("#0A0B46FF"),
       ice1: BABYLON.Color4.FromHexString("#E3F2FDFF"),
       highlight1: BABYLON.Color4.FromHexString("#F44336FF")
-    },
-    shader: {
-      path: "./shaders/planet"
     }
   };
 
@@ -37,7 +33,6 @@ window.addEventListener('DOMContentLoaded', function () {
     mesh: {
       diameter: 2.1,
       isPickable: false,
-      yRotation: BABYLON.Tools.ToRadians(90)
     },
     shader: {
       path: "./shaders/clouds",
@@ -47,8 +42,8 @@ window.addEventListener('DOMContentLoaded', function () {
         octaves: 4,
         persistence: 0.6
       },
-      yElongate: 10, // elongate clouds elongate along the y-axis by amount of times
-      yTiltAngle: 15, // tilt clouds by degrees
+      horizontalElongate: 10, // elongate clouds on by amount of times
+      verticalTiltAngle: -15, // tilt clouds by degrees
       fastTime: Math.pow(10, -6),
       slowTime: Math.pow(10, -7)
     }
@@ -103,7 +98,7 @@ window.addEventListener('DOMContentLoaded', function () {
   light.diffuse = new BABYLON.Color3(1, 1, 1); // 1, 1, 1: Bright white
   light.specular = new BABYLON.Color3(1, 1, 1); // 0, 0, 0: No specular highlights
 
-  const camera = new BABYLON.ArcRotateCamera("camera1", -Math.PI / 2, Math.PI / 2, 2.75, new BABYLON.Vector3(0, 0, 0), scene);
+  const camera = new BABYLON.ArcRotateCamera("camera", BABYLON.Tools.ToRadians(0), BABYLON.Tools.ToRadians(90), 2.75, BABYLON.Vector3.Zero(), scene);
 
   // Attach the camera to the canvas
   camera.attachControl(canvas, true);
@@ -124,8 +119,7 @@ window.addEventListener('DOMContentLoaded', function () {
     diameter: terrain.mesh.diameter
   });
   planetMesh.isPickable = terrain.mesh.isPickable;
-  planetMesh.rotation.x = terrain.mesh.xRotation;
-  planetMesh.rotation.y = terrain.mesh.yRotation;
+  planetMesh.rotation.x = terrain.mesh.verticalRotation;
 
   // Create a new StandardMaterial
   var planetMaterial = new BABYLON.StandardMaterial("material", scene);
@@ -175,15 +169,14 @@ window.addEventListener('DOMContentLoaded', function () {
   cloudsShaderMaterial.setInt("octaves", clouds.shader.noise.octaves);
   cloudsShaderMaterial.setFloat("persistence", clouds.shader.noise.persistence);
   cloudsShaderMaterial.setFloat("offset", clouds.shader.noise.offset);
-  cloudsShaderMaterial.setFloat("yElongate", clouds.shader.yElongate);
-  cloudsShaderMaterial.setFloat("yTiltAngle", clouds.shader.yTiltAngle);
+  cloudsShaderMaterial.setFloat("horizontalElongate", clouds.shader.horizontalElongate);
+  cloudsShaderMaterial.setFloat("verticalTiltAngle", clouds.shader.verticalTiltAngle);
   cloudsShaderMaterial.backFaceCulling = false;
 
   if (clouds.render) {
     const cloudsMesh = BABYLON.MeshBuilder.CreateSphere("cloudsMesh", { diameter: clouds.mesh.diameter }, scene);
     cloudsMesh.material = cloudsShaderMaterial;
     cloudsMesh.isPickable = clouds.mesh.isPickable;
-    cloudsMesh.rotation.y = clouds.mesh.yRotation;
   }
 
   // Event listener for mouse clicks on the Goldberg polyhedron
