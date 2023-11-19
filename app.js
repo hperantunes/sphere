@@ -99,7 +99,7 @@ window.addEventListener('DOMContentLoaded', function () {
   light.diffuse = new BABYLON.Color3(1, 1, 1); // 1, 1, 1: Bright white
   light.specular = new BABYLON.Color3(1, 1, 1); // 0, 0, 0: No specular highlights
 
-  const camera = new BABYLON.ArcRotateCamera("camera1", -Math.PI / 2, Math.PI / 2.2, 3, new BABYLON.Vector3(0, 0, 0), scene);
+  const camera = new BABYLON.ArcRotateCamera("camera1", -Math.PI / 2, Math.PI / 2, 2.75, new BABYLON.Vector3(0, 0, 0), scene);
   camera.attachControl(canvas, true);
 
   // Slow down the zoom speed
@@ -117,17 +117,20 @@ window.addEventListener('DOMContentLoaded', function () {
     n: terrain.mesh.n,
     diameter: terrain.mesh.diameter
   });
-  goldbergMesh.isPickable = terrain.mesh.isPickable;  // Ensure the mesh can be picked
+  goldbergMesh.isPickable = terrain.mesh.isPickable;
   goldbergMesh.rotation.x = terrain.mesh.xRotation;
   goldbergMesh.rotation.y = terrain.mesh.yRotation;
 
   // Create an array to hold all face color data
   const faceColors = goldbergMesh.goldbergData.faceCenters.map((face, i) => {
-    const latitude = Math.abs(face._y * 90);
-    const isPolarRegion = latitude > 80;
-    if (isPolarRegion) {
-      return [i, i, terrain.colors.ice1];  
+    // Highlight faces at the poles
+    const latitude = face._y * 90;
+    if (latitude > 89) {
+      return [i, i, BABYLON.Color3.Green()];
+    } else if (latitude < -89) {
+      return [i, i, BABYLON.Color3.Red()];
     }
+    // Get the noise value for the current face
     const noise = getNoise(face._x, face._y, face._z, terrain.noise);
     const color = getTerrainColor(noise, terrain.colors);
     return [i, i, color];
