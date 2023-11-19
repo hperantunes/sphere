@@ -70,20 +70,20 @@ window.addEventListener('DOMContentLoaded', function () {
     return value / maxValue;
   };
 
-  const getTerrainColor = (noise, colors) => {
-    if (noise > 0.55) {
+  const getTerrainColorByElevation = (elevationNoise, colors) => {
+    if (elevationNoise > 0.55) {
       return colors.ice1;
-    } else if (noise > 0.5) {
+    } else if (elevationNoise > 0.5) {
       return colors.land5;
-    } else if (noise > 0.45) {
+    } else if (elevationNoise > 0.45) {
       return colors.land4;
-    } else if (noise > 0.3) {
+    } else if (elevationNoise > 0.3) {
       return colors.land3;
-    } else if (noise > 0.15) {
+    } else if (elevationNoise > 0.15) {
       return colors.land2;
-    } else if (noise > 0) {
+    } else if (elevationNoise > 0) {
       return colors.land1;
-    } else if (noise > -0.1) {
+    } else if (elevationNoise > -0.1) {
       return colors.water1;
     } else {
       return colors.water2;
@@ -130,8 +130,8 @@ window.addEventListener('DOMContentLoaded', function () {
   // Create a new StandardMaterial
   var planetMaterial = new BABYLON.StandardMaterial("material", scene);
 
-  // Set the specularColor of the material to black
-  planetMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
+  // Set the specularColor of the material to black, to remove the specular reflection
+  planetMaterial.specularColor = new BABYLON.Color3.Black();
 
   // Assign the material to the planetMesh
   planetMesh.material = planetMaterial;
@@ -140,14 +140,14 @@ window.addEventListener('DOMContentLoaded', function () {
   const faceColors = planetMesh.goldbergData.faceCenters.map((face, i) => {
     // Highlight faces at the poles
     const latitude = face._y * 90;
-    if (latitude > 89) {
+    if (latitude > 89.5) {
       return [i, i, BABYLON.Color3.Green()];
-    } else if (latitude < -89) {
+    } else if (latitude < -89.5) {
       return [i, i, BABYLON.Color3.Red()];
     }
-    // Get the noise value for the current face
-    const noise = getNoise(face._x, face._y, face._z, terrain.noise);
-    const color = getTerrainColor(noise, terrain.colors);
+    // Get the elevation noise value for the current face
+    const elevationNoise = getNoise(face._x, face._y, face._z, terrain.noise);
+    const color = getTerrainColorByElevation(elevationNoise, terrain.colors);
     return [i, i, color];
   });
 
