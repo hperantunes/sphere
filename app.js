@@ -96,7 +96,6 @@ window.addEventListener('DOMContentLoaded', function () {
   light.specular = new BABYLON.Color3(1, 1, 1); // 0, 0, 0: No specular highlights
 
   const camera = new BABYLON.ArcRotateCamera("camera1", -Math.PI / 2, Math.PI / 2.2, 3, new BABYLON.Vector3(0, 0, 0), scene);
-
   camera.attachControl(canvas, true);
 
   // Slow down the zoom speed
@@ -134,20 +133,6 @@ window.addEventListener('DOMContentLoaded', function () {
     }
   });
 
-  // Event listener for mouse clicks on the Goldberg polyhedron
-  scene.onPointerDown = function (evt, pickResult) {
-    // Middle-mouse click
-    if (evt.button !== 1) {
-      return;
-    }
-    // Check if we hit the goldberg mesh
-    if (pickResult.hit && pickResult.pickedMesh === goldbergMesh) {
-      const faceId = pickResult.faceId;
-      const f = getFaceNumberFromFacetId(faceId);
-      goldbergMesh.setGoldbergFaceColors([[f, f, terrain.colors.highlight1]]);
-    }
-  };
-
   const cloudsShaderMaterial = new BABYLON.ShaderMaterial("cloudsShader", scene, clouds.shader.path, {
     attributes: ["position", "normal", "uv"],
     uniforms: ["world", "worldView", "worldViewProjection", "view", "projection"]
@@ -163,6 +148,20 @@ window.addEventListener('DOMContentLoaded', function () {
   cloudsMesh.material = cloudsShaderMaterial;
   cloudsMesh.isPickable = clouds.mesh.isPickable;
   cloudsMesh.rotation.y = clouds.mesh.yRotation;
+
+  // Event listener for mouse clicks on the Goldberg polyhedron
+  scene.onPointerDown = function (evt, pickResult) {
+    // Middle-mouse click
+    if (evt.button !== 1) {
+      return;
+    }
+    // Check if we hit the goldberg mesh
+    if (pickResult.hit && pickResult.pickedMesh === goldbergMesh) {
+      const faceId = pickResult.faceId;
+      const f = getFaceNumberFromFacetId(faceId);
+      goldbergMesh.setGoldbergFaceColors([[f, f, terrain.colors.highlight1]]);
+    }
+  };
 
   engine.runRenderLoop(function () {
     let time = performance.now();
