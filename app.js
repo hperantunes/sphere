@@ -54,9 +54,9 @@ window.addEventListener('DOMContentLoaded', function () {
     }
   };
 
-  const simplex = new SimplexNoise();
+  const elevationSimplex = new SimplexNoise();
 
-  const getNoise = (x, y, z, { frequency, octaves, persistence }) => {
+  const getNoise = (x, y, z, { frequency, octaves, persistence }, simplex) => {
     let freq = frequency;
     let value = 0;
     let amplitude = 1;
@@ -146,7 +146,7 @@ window.addEventListener('DOMContentLoaded', function () {
       return [i, i, BABYLON.Color3.Red()];
     }
     // Get the elevation noise value for the current face
-    const elevationNoise = getNoise(face._x, face._y, face._z, terrain.noise);
+    const elevationNoise = getNoise(face._x, face._y, face._z, terrain.noise, elevationSimplex);
     const color = getTerrainColorByElevation(elevationNoise, terrain.colors);
     return [i, i, color];
   });
@@ -181,6 +181,36 @@ window.addEventListener('DOMContentLoaded', function () {
     cloudsMesh.isPickable = clouds.mesh.isPickable;
     cloudsMesh.rotation.y = clouds.mesh.yRotation;
   }
+
+  // Create a new SimplexNoise generator for wind direction and speed
+  const windDirectionSimplex = new SimplexNoise();
+  const windSpeedSimplex = new SimplexNoise();
+
+  // Function to get wind direction using 3D noise
+  const getWindDirection = (x, y, z, { frequency, octaves, persistence }) => {
+    const noise = getNoise(x, y, z, { frequency, octaves, persistence }, windDirectionSimplex);
+    // Convert noise (range -1 to 1) to angle (range -PI to PI)
+    const angle = noise * Math.PI;
+    // Return a unit vector in the direction of the angle
+    return new BABYLON.Vector3(Math.cos(angle), Math.sin(angle), 0);
+  };
+
+  // Function to get wind speed using 2D noise
+  const getWindSpeed = (x, y, { frequency, octaves, persistence }) => {
+    const noise = getNoise(x, y, 0, { frequency, octaves, persistence }, windSpeedSimplex);
+    // Convert noise (range -1 to 1) to speed (range 0 to maxSpeed)
+    const maxSpeed = 10; // Adjust as needed
+    const speed = (noise + 1) / 2 * maxSpeed;
+    return speed;
+  };
+
+  // Function to get wind vector (direction and speed) at a point
+  const getWindVector = (x, y, z, noiseParams) => {
+    const direction = getWindDirection(x, y, z, noiseParams);
+    const speed = getWindSpeed(x, y, noiseParams);
+    // Return the wind vector
+    return direction.scale(speed);
+  };
 
   // Event listener for mouse clicks on the Goldberg polyhedron
   scene.onPointerDown = function (evt, pickResult) {
