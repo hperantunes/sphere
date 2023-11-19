@@ -1,13 +1,3 @@
-varying vec3 vPosition;
-
-uniform float frequency;
-uniform int octaves;
-uniform float persistence;
-
-uniform float offset;
-uniform float fastTime;
-uniform float slowTime;
-
 float hash(float n) {
   return fract(sin(n) * 43758.5453);
 }
@@ -85,12 +75,25 @@ float snoise(vec3 v){
   return 42.0 * dot(m * m, vec4(dot(p0, x0), dot(p1, x1), dot(p2, x2), dot(p3, x3)));
 }
 
+varying vec3 vPosition;
+
+uniform float frequency;
+uniform int octaves;
+uniform float persistence;
+
+uniform float offset;
+uniform float yElongate;
+uniform float yTiltAngle;
+
+uniform float fastTime;
+uniform float slowTime;
+
 void main(void) {
   vec3 position = vPosition * frequency; // smaller number generates fewer and larger clouds
   position.x -= fastTime; // rotate quickly on the x-axis to the right
 
-  // tilt the sphere to the left about 15 degrees
-  float tiltAngle = radians(15.0);
+  // tilt the sphere to the left about x degrees
+  float tiltAngle = radians(yTiltAngle);
   float sTilt = sin(tiltAngle);
   float cTilt = cos(tiltAngle);
   float yTilt = position.y * cTilt - position.z * sTilt;
@@ -98,7 +101,7 @@ void main(void) {
   position.y = yTilt;
   position.z = zTilt;
 
-  position.y *= 10.0; // elongate along the y-axis
+  position.y *= yElongate; // elongate along the y-axis
 
   float n = 0.0;
   for (int i = 0; i < octaves; i++) {

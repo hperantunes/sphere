@@ -41,6 +41,8 @@ window.addEventListener('DOMContentLoaded', function () {
         octaves: 4,
         persistence: 0.6
       },
+      yElongate: 10, // elongate clouds elongate along the y-axis by amount of times
+      yTiltAngle: 15, // tilt clouds by degrees
       fastTime: Math.pow(10, -6),
       slowTime: Math.pow(10, -7)
     }
@@ -138,10 +140,12 @@ window.addEventListener('DOMContentLoaded', function () {
     uniforms: ["world", "worldView", "worldViewProjection", "view", "projection"]
   });
 
-  cloudsShaderMaterial.setFloat("offset", clouds.shader.noise.offset);
   cloudsShaderMaterial.setFloat("frequency", clouds.shader.noise.frequency);
   cloudsShaderMaterial.setInt("octaves", clouds.shader.noise.octaves);
   cloudsShaderMaterial.setFloat("persistence", clouds.shader.noise.persistence);
+  cloudsShaderMaterial.setFloat("offset", clouds.shader.noise.offset);
+  cloudsShaderMaterial.setFloat("yElongate", clouds.shader.yElongate);
+  cloudsShaderMaterial.setFloat("yTiltAngle", clouds.shader.yTiltAngle);
   cloudsShaderMaterial.backFaceCulling = false;
 
   const cloudsMesh = BABYLON.MeshBuilder.CreateSphere("cloudsMesh", { diameter: clouds.mesh.diameter }, scene); // Adjust the diameter as needed
