@@ -142,6 +142,9 @@ window.addEventListener('DOMContentLoaded', function () {
 
   const offset = Math.random() * 1000; // generate a random offset
   cloudShaderMaterial.setFloat("offset", offset);
+  cloudShaderMaterial.setFloat("frequency", 0.4);
+  cloudShaderMaterial.setInt("octaves", 2);
+  cloudShaderMaterial.setFloat("persistence", 1);
   cloudShaderMaterial.backFaceCulling = false;
 
   const cloudMesh = BABYLON.MeshBuilder.CreateSphere("cloudMesh", { diameter: 2.1 }, scene); // Adjust the diameter as needed
