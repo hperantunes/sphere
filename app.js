@@ -33,6 +33,7 @@ window.addEventListener('DOMContentLoaded', function () {
   };
 
   const clouds = {
+    render: true,
     mesh: {
       diameter: 2.1,
       isPickable: false,
@@ -90,10 +91,9 @@ window.addEventListener('DOMContentLoaded', function () {
   };
 
   const scene = new BABYLON.Scene(engine);
-  scene.clearColor = new BABYLON.Color4(0, 0, 0, 1); // RGBA values
 
   // Create a light
-  var light = new BABYLON.PointLight("light", new BABYLON.Vector3(100, 100, 0), scene);
+  const light = new BABYLON.HemisphericLight("HemiLight", new BABYLON.Vector3(100, 100, 0), scene);
 
   // Set the light intensity
   light.intensity = 1; // 0.7: Adjust as needed
@@ -104,9 +104,6 @@ window.addEventListener('DOMContentLoaded', function () {
   light.specular = new BABYLON.Color3(1, 1, 1); // 0, 0, 0: No specular highlights
 
   const camera = new BABYLON.ArcRotateCamera("camera1", -Math.PI / 2, Math.PI / 2, 2.75, new BABYLON.Vector3(0, 0, 0), scene);
-
-  // Set the target of the camera to the center of the scene
-  camera.setTarget(BABYLON.Vector3.Zero());
 
   // Attach the camera to the canvas
   camera.attachControl(canvas, true);
@@ -130,13 +127,14 @@ window.addEventListener('DOMContentLoaded', function () {
   planetMesh.rotation.x = terrain.mesh.xRotation;
   planetMesh.rotation.y = terrain.mesh.yRotation;
 
-  const planetShaderMaterial = new BABYLON.ShaderMaterial("planetShader", scene, terrain.shader.path, {
-    attributes: ["position", "normal", "uv"],
-    uniforms: ["world", "worldView", "worldViewProjection", "view", "projection"]
-  });
+  // Create a new StandardMaterial
+  var planetMaterial = new BABYLON.StandardMaterial("material", scene);
 
-  planetShaderMaterial.setVector3("lightDirection", light.position);
-  planetMesh.material = planetShaderMaterial;
+  // Set the specularColor of the material to black
+  planetMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
+
+  // Assign the material to the planetMesh
+  planetMesh.material = planetMaterial;
 
   // Create an array to hold all face color data
   const faceColors = planetMesh.goldbergData.faceCenters.map((face, i) => {
@@ -177,10 +175,12 @@ window.addEventListener('DOMContentLoaded', function () {
   cloudsShaderMaterial.setFloat("yTiltAngle", clouds.shader.yTiltAngle);
   cloudsShaderMaterial.backFaceCulling = false;
 
-  const cloudsMesh = BABYLON.MeshBuilder.CreateSphere("cloudsMesh", { diameter: clouds.mesh.diameter }, scene); // Adjust the diameter as needed
-  cloudsMesh.material = cloudsShaderMaterial;
-  cloudsMesh.isPickable = clouds.mesh.isPickable;
-  cloudsMesh.rotation.y = clouds.mesh.yRotation;
+  if (clouds.render) {
+    const cloudsMesh = BABYLON.MeshBuilder.CreateSphere("cloudsMesh", { diameter: clouds.mesh.diameter }, scene);
+    cloudsMesh.material = cloudsShaderMaterial;
+    cloudsMesh.isPickable = clouds.mesh.isPickable;
+    cloudsMesh.rotation.y = clouds.mesh.yRotation;
+  }
 
   // Event listener for mouse clicks on the Goldberg polyhedron
   scene.onPointerDown = function (evt, pickResult) {
