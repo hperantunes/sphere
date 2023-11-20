@@ -96,7 +96,7 @@ window.addEventListener('DOMContentLoaded', function () {
   // Use similar colors for the sky and ground to ensure uniform lighting
   light.groundColor = new BABYLON.Color3(1, 1, 1); // 0.75, 0.75, 0.75: Soft grey
   light.diffuse = new BABYLON.Color3(1, 1, 1); // 1, 1, 1: Bright white
-  light.specular = new BABYLON.Color3(1, 1, 1); // 0, 0, 0: No specular highlights
+  light.specular = new BABYLON.Color3(0, 0, 0); // 0, 0, 0: No specular highlights
 
   const camera = new BABYLON.ArcRotateCamera("camera", BABYLON.Tools.ToRadians(0), BABYLON.Tools.ToRadians(90), 2.75, BABYLON.Vector3.Zero(), scene);
 
@@ -123,9 +123,6 @@ window.addEventListener('DOMContentLoaded', function () {
 
   // Create a new StandardMaterial
   var planetMaterial = new BABYLON.StandardMaterial("material", scene);
-
-  // Set the specularColor of the material to black, to remove the specular reflection
-  planetMaterial.specularColor = new BABYLON.Color3.Black();
 
   // Assign the material to the planetMesh
   planetMesh.material = planetMaterial;
