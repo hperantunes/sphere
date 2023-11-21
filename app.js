@@ -6,7 +6,7 @@ window.addEventListener('DOMContentLoaded', function () {
     mesh: {
       m: 100,
       n: 0,
-      diameter: 2,
+      size: 1,
       isPickable: true,
       verticalRotation: BABYLON.Tools.ToRadians(-15),
     },
@@ -119,7 +119,7 @@ window.addEventListener('DOMContentLoaded', function () {
   const planetMesh = BABYLON.MeshBuilder.CreateGoldberg("g", {
     m: terrain.mesh.m,
     n: terrain.mesh.n,
-    diameter: terrain.mesh.diameter
+    size: terrain.mesh.size
   });
   planetMesh.isPickable = terrain.mesh.isPickable;
   planetMesh.rotation.x = terrain.mesh.verticalRotation;
