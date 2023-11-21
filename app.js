@@ -86,22 +86,18 @@ window.addEventListener('DOMContentLoaded', function () {
   };
 
   const scene = new BABYLON.Scene(engine);
+  scene.clearColor = BABYLON.Color3.Black();
 
   // Create a light
   const hemisphericLight = new BABYLON.HemisphericLight("HemiLight", new BABYLON.Vector3(0, 0, 0), scene);
-  hemisphericLight.intensity = 0.2; // 0.7: Adjust as needed
+  hemisphericLight.intensity = 1; // 0.7: Adjust as needed
 
   // Use similar colors for the sky and ground to ensure uniform lighting
   hemisphericLight.groundColor = new BABYLON.Color3(1, 1, 1); // 0.75, 0.75, 0.75: Soft grey
   hemisphericLight.diffuse = new BABYLON.Color3(1, 1, 1); // 1, 1, 1: Bright white
   hemisphericLight.specular = new BABYLON.Color3(0, 0, 0); // 0, 0, 0: No specular highlights
 
-  const directionalLight = new BABYLON.DirectionalLight("DirectionalLight", new BABYLON.Vector3(0, 0, -1), scene);
-  directionalLight.intensity = 10;
-  directionalLight.position = new BABYLON.Vector3(0, 0, 0);
-  directionalLight.specular = new BABYLON.Color3(0, 0, 0); // 0, 0, 0: No specular highlights
-
-  const camera = new BABYLON.ArcRotateCamera("camera", BABYLON.Tools.ToRadians(0), BABYLON.Tools.ToRadians(90), 2.75, BABYLON.Vector3.Zero(), scene);
+  const camera = new BABYLON.ArcRotateCamera("camera", BABYLON.Tools.ToRadians(0), BABYLON.Tools.ToRadians(90), 4, BABYLON.Vector3.Zero(), scene);
 
   // Attach the camera to the canvas
   camera.attachControl(canvas, true);
