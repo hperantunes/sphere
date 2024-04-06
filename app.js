@@ -88,6 +88,32 @@ window.addEventListener('DOMContentLoaded', function () {
   const scene = new BABYLON.Scene(engine);
   scene.clearColor = BABYLON.Color3.Black();
 
+  const planetMesh = BABYLON.MeshBuilder.CreateGoldberg("g", {
+    m: terrain.mesh.m,
+    n: terrain.mesh.n,
+    size: terrain.mesh.size
+  });
+
+  console.log("Number of faces:", planetMesh.goldbergData.faceCenters.length);
+  this.window.planet = planetMesh;
+
+  if (new URLSearchParams(window.location.search).has("export")) {
+    const fileName = `goldberg-m${terrain.mesh.m}n${terrain.mesh.n}`;
+    BABYLON.GLTF2Export.GLBAsync(scene, fileName, { shouldExportNode: (node) => node === planetMesh }).then((glb) => {
+      glb.downloadFiles();
+    });
+    return;
+  }
+
+  planetMesh.isPickable = terrain.mesh.isPickable;
+  planetMesh.rotation.x = terrain.mesh.verticalRotation;
+
+  // Create a new StandardMaterial
+  var planetMaterial = new BABYLON.StandardMaterial("material", scene);
+
+  // Assign the material to the planetMesh
+  planetMesh.material = planetMaterial;
+
   // Create a light
   const hemisphericLight = new BABYLON.HemisphericLight("HemiLight", new BABYLON.Vector3(0, 0, 0), scene);
   hemisphericLight.intensity = 1; // 0.7: Adjust as needed
@@ -112,19 +138,7 @@ window.addEventListener('DOMContentLoaded', function () {
   camera.angularSensibilityX = 2500; // Default is usually 1000, increase if the rotation is too fast
   camera.angularSensibilityY = 2500; // Same as above, adjust as needed
 
-  const planetMesh = BABYLON.MeshBuilder.CreateGoldberg("g", {
-    m: terrain.mesh.m,
-    n: terrain.mesh.n,
-    size: terrain.mesh.size
-  });
-  planetMesh.isPickable = terrain.mesh.isPickable;
-  planetMesh.rotation.x = terrain.mesh.verticalRotation;
 
-  // Create a new StandardMaterial
-  var planetMaterial = new BABYLON.StandardMaterial("material", scene);
-
-  // Assign the material to the planetMesh
-  planetMesh.material = planetMaterial;
 
   // Create an array to hold all face color data
   const faceColors = planetMesh.goldbergData.faceCenters.map((face, i) => {
@@ -200,13 +214,6 @@ window.addEventListener('DOMContentLoaded', function () {
     engine.resize();
   });
 
-  console.log("Number of faces:", planetMesh.goldbergData.faceCenters.length);
-  this.window.planet = planetMesh;
 
-  if (new URLSearchParams(window.location.search).has("export")) {
-    BABYLON.GLTF2Export.GLBAsync(scene, "filename", { shouldExportNode: (node) => node === planetMesh }).then((glb) => {
-      glb.downloadFiles();
-    });
-  }
   
 });
