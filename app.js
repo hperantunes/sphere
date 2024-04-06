@@ -98,7 +98,7 @@ window.addEventListener('DOMContentLoaded', function () {
   this.window.planet = planetMesh;
 
   if (new URLSearchParams(window.location.search).has("export")) {
-    const fileName = `goldberg-m${terrain.mesh.m}n${terrain.mesh.n}`;
+    const fileName = `goldberg_${terrain.mesh.m}`;
     BABYLON.GLTF2Export.GLBAsync(scene, fileName, { shouldExportNode: (node) => node === planetMesh }).then((glb) => {
       glb.downloadFiles();
     });
