@@ -202,4 +202,11 @@ window.addEventListener('DOMContentLoaded', function () {
 
   console.log("Number of faces:", planetMesh.goldbergData.faceCenters.length);
   this.window.planet = planetMesh;
+
+  if (new URLSearchParams(window.location.search).has("export")) {
+    BABYLON.GLTF2Export.GLBAsync(scene, "filename", { shouldExportNode: (node) => node === planetMesh }).then((glb) => {
+      glb.downloadFiles();
+    });
+  }
+  
 });
