@@ -1,10 +1,15 @@
 window.addEventListener('DOMContentLoaded', function () {
+  const urlSearchParams = new URLSearchParams(window.location.search);
+
+  const seed = urlSearchParams.get("s") || Math.floor(Math.random() * 1000000000);
+  const m = Number.parseInt(urlSearchParams.get("m")) || 100;
+
   var canvas = document.getElementById('renderCanvas');
   var engine = new BABYLON.Engine(canvas, true);
 
   const terrain = {
     mesh: {
-      m: 100,
+      m: m,
       n: 0,
       size: 1,
       isPickable: true,
@@ -29,7 +34,7 @@ window.addEventListener('DOMContentLoaded', function () {
   };
 
   const clouds = {
-    render: true,
+    render: false,
     mesh: {
       diameter: 2.1,
       isPickable: false,
@@ -49,7 +54,7 @@ window.addEventListener('DOMContentLoaded', function () {
     }
   };
 
-  const elevationSimplex = new SimplexNoise();
+  const elevationSimplex = new SimplexNoise(seed);
 
   const getNoise = (x, y, z, { frequency, octaves, persistence }, simplex) => {
     let freq = frequency;
@@ -94,10 +99,11 @@ window.addEventListener('DOMContentLoaded', function () {
     size: terrain.mesh.size
   });
 
+  console.log("Seed:", seed);
   console.log("Number of faces:", planetMesh.goldbergData.faceCenters.length);
   this.window.planet = planetMesh;
 
-  if (new URLSearchParams(window.location.search).has("export")) {
+  if (urlSearchParams.has("export")) {
     const fileName = `goldberg_${terrain.mesh.m}`;
     BABYLON.GLTF2Export.GLBAsync(scene, fileName, { shouldExportNode: (node) => node === planetMesh }).then((glb) => {
       glb.downloadFiles();
@@ -213,7 +219,5 @@ window.addEventListener('DOMContentLoaded', function () {
   window.addEventListener('resize', () => {
     engine.resize();
   });
-
-
   
 });
