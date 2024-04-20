@@ -4,6 +4,30 @@ window.addEventListener('DOMContentLoaded', function () {
   const seed = urlSearchParams.get("s") || Math.floor(Math.random() * 1000000000);
   const m = Number.parseInt(urlSearchParams.get("m")) || 100;
 
+  const seedInput = document.getElementById('seedInput');
+  const mInput = document.getElementById('mInput');
+
+  seedInput.value = seed;
+  mInput.value = m;
+
+  const updateButton = document.getElementById('updateButton');
+
+  function clickUpdateButtonIfEnter(event) {
+    if (event.key === 'Enter') {
+      updateButton.click();
+    }
+  }
+  
+  seedInput.addEventListener('keydown', clickUpdateButtonIfEnter);
+  mInput.addEventListener('keydown', clickUpdateButtonIfEnter);
+
+  updateButton.addEventListener('click', function () {
+    urlSearchParams.set('s', seedInput.value);
+    urlSearchParams.set('m', mInput.value);
+    window.history.replaceState({}, '', '?' + urlSearchParams.toString());
+    window.location.reload();
+  });
+
   var canvas = document.getElementById('renderCanvas');
   var engine = new BABYLON.Engine(canvas, true);
 
@@ -219,5 +243,5 @@ window.addEventListener('DOMContentLoaded', function () {
   window.addEventListener('resize', () => {
     engine.resize();
   });
-  
+
 });
