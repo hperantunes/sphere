@@ -3,6 +3,8 @@ window.addEventListener('DOMContentLoaded', function () {
 
   const seed = urlSearchParams.get("s") || Math.floor(Math.random() * 1000000000);
   const m = Number.parseInt(urlSearchParams.get("m")) || 100;
+  const renderClouds = urlSearchParams.get("c");
+  const renderPoleIndicators = urlSearchParams.get("p");
 
   const seedInput = document.getElementById('seedInput');
   const mInput = document.getElementById('mInput');
@@ -58,7 +60,7 @@ window.addEventListener('DOMContentLoaded', function () {
   };
 
   const clouds = {
-    render: false,
+    render: renderClouds,
     mesh: {
       diameter: 2.1,
       isPickable: false,
@@ -173,11 +175,13 @@ window.addEventListener('DOMContentLoaded', function () {
   // Create an array to hold all face color data
   const faceColors = planetMesh.goldbergData.faceCenters.map((face, i) => {
     // Highlight faces at the poles
-    const latitude = face._y * 90;
-    if (latitude > 89.5) {
-      return [i, i, BABYLON.Color3.Green()];
-    } else if (latitude < -89.5) {
-      return [i, i, BABYLON.Color3.Red()];
+    if (renderPoleIndicators) {
+      const latitude = face._y * 90;
+      if (latitude > 89.5) {
+        return [i, i, BABYLON.Color3.Green()];
+      } else if (latitude < -89.5) {
+        return [i, i, BABYLON.Color3.Red()];
+      }
     }
 
     // Get the elevation noise value for the current face
