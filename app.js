@@ -129,13 +129,7 @@ window.addEventListener('DOMContentLoaded', function () {
   console.log("Number of faces:", planetMesh.goldbergData.faceCenters.length);
   this.window.planet = planetMesh;
 
-  if (urlSearchParams.has("export")) {
-    const fileName = `goldberg_${terrain.mesh.m}`;
-    BABYLON.GLTF2Export.GLBAsync(scene, fileName, { shouldExportNode: (node) => node === planetMesh }).then((glb) => {
-      glb.downloadFiles();
-    });
-    return;
-  }
+
 
   planetMesh.isPickable = terrain.mesh.isPickable;
   planetMesh.rotation.x = terrain.mesh.verticalRotation;
@@ -247,5 +241,13 @@ window.addEventListener('DOMContentLoaded', function () {
   window.addEventListener('resize', () => {
     engine.resize();
   });
+
+  if (urlSearchParams.has("export")) {
+    const fileName = `goldberg_${terrain.mesh.m}`;
+    BABYLON.GLTF2Export.GLBAsync(scene, fileName, { shouldExportNode: (node) => node === planetMesh }).then((glb) => {
+      glb.downloadFiles();
+    });
+    return;
+  }
 
 });
