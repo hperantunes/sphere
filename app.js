@@ -127,6 +127,7 @@ window.addEventListener('DOMContentLoaded', function () {
 
   console.log("Seed:", seed);
   console.log("Number of faces:", planetMesh.goldbergData.faceCenters.length);
+  console.log("Triangles count:", planetMesh.getIndices().length / 3);
   this.window.planet = planetMesh;
 
 
