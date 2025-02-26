@@ -1,25 +1,89 @@
-# Sphere
+# Sphere: Procedural Planet Generator
 
-## How to run
+An interactive 3D planet generator built with Babylon.js that creates procedurally generated terrain using Simplex Noise algorithms. The application renders a customizable globe with realistic terrain features, optional cloud layers, and interactive capabilities.
 
-Navigate to the directory where the project is located and run:
+## ✨ Features
 
+- **Procedural Terrain Generation**: Create diverse planetary landscapes using Simplex Noise
+- **Dynamic Cloud Layer**: Optional animated cloud coverage with shader-based rendering
+- **Interactive Visualization**: Rotate, zoom, and explore the generated planet
+- **Customizable Parameters**: Control terrain complexity, seed values, and visual features
+- **Exportable Models**: Save your generated planet as a 3D model
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- A modern web browser
+- Node.js and npm (for running locally)
+
+### Installation
+
+1. Clone the repository:
+```bash
+git clone https://github.com/hperantunes/sphere.git
+cd sphere
 ```
+
+2. Start a local server:
+```bash
 npx serve .
 ```
 
-## World generation
+3. Open your browser and navigate to `http://localhost:3000`
 
-### Simplex Noise
+## 🎮 Controls
 
-The Simplex Noise function generates coherent noise, which means that the output values change smoothly over the input domain. The parameters `freq`, `octaves`, and `persistence` are used to control the appearance of the generated noise, and by adjusting these parameters, you can create a more realistic representation of continents and oceans on your globe.
+- **Left Mouse Button + Drag**: Rotate the planet
+- **Scroll Wheel**: Zoom in/out
+- **Middle Mouse Button**: Highlight a specific face on the terrain (debugging feature)
 
-1. `freq` (Frequency): This parameter controls the scale of the noise. Higher frequency values result in more fine-grained details and smaller features in the noise, while lower frequency values result in larger, more homogeneous areas.
-2. `octaves`: This parameter determines the number of layers of noise that are combined to produce the final output. Each additional octave adds finer details to the noise. The more octaves you use, the more complex and rich the noise pattern will be. However, using too many octaves can create a noisy appearance that may not look natural.
-3. `persistence`: This parameter determines the amplitude falloff for each successive octave. It is a value between 0 and 1. A higher persistence value means that each octave contributes more significantly to the final output, resulting in a rougher appearance with more high-frequency details. Lower persistence values cause each successive octave to have a smaller impact, creating a smoother and more natural appearance.
+## ⚙️ Configuration Options
 
-To create a more realistic representation of continents on your globe, you can experiment with these parameters:
+You can customize the planet generation through URL parameters:
 
-- Lower the frequency value to create larger continental shapes.
-- Increase the number of octaves to add more detail and complexity to the continent shapes.
-- Adjust the persistence value to control the balance between high-frequency details and smooth, natural-looking shapes. You can start with a lower persistence value and increase it slowly to find the optimal balance.
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `s` | Seed value for terrain generation | Random value |
+| `m` | Resolution (higher values = more detailed terrain) | 100 |
+| `c` | Enable cloud layer (any value = enabled) | Disabled |
+| `p` | Show pole indicators (any value = enabled) | Disabled |
+| `export` | Export the model as GLB when present | N/A |
+
+### Examples
+
+- Basic planet with seed 12345: `?s=12345`
+- High-resolution planet with clouds: `?m=200&c=true`
+- Export high-res planet: `?m=150&export`
+
+## 🔧 Technical Details
+
+### Terrain Generation
+
+The terrain is generated using a Goldberg polyhedron mesh with Simplex Noise applied to create elevation variations. The noise parameters control the terrain characteristics:
+
+- **Frequency**: Controls the scale of terrain features
+- **Octaves**: Determines the level of detail and complexity
+- **Persistence**: Affects the amplitude of each successive noise layer
+
+### Cloud System
+
+Clouds are rendered as a separate spherical mesh with a custom shader that creates dynamic cloud patterns. The cloud layer:
+
+- Animates slowly over time to simulate atmospheric movement
+- Has configurable noise parameters separate from the terrain
+- Can be horizontally elongated to create more realistic cloud shapes
+
+### Coloring System
+
+The terrain uses elevation-based coloring with multiple thresholds:
+
+- Deep ocean: Dark blue
+- Shallow water: Light blue
+- Lowlands: Green
+- Hills/Mountains: Brown and gray
+- Polar regions: White (ice)
+
+## 📄 License
+
+[MIT License](LICENSE)
