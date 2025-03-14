@@ -1,21 +1,239 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-  <title>Sphere</title>
+  <title>Planet Generator</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="vendor/babylon.js"></script>
   <script src="vendor/babylonjs.serializers.min.js"></script>
   <script src="vendor/simplex-noise.js"></script>
+  <style>
+    :root {
+      --primary-color: #1a2639;
+      --accent-color: #3f8efc;
+      --light-accent: #5dabff;
+      --background-color: #0d1117;
+      --text-color: #e6e6e6;
+      --panel-bg: rgba(30, 40, 60, 0.8);
+      --input-bg: rgba(20, 30, 50, 0.6);
+      --border-radius: 8px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: var(--background-color);
+      color: var(--text-color);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    header {
+      text-align: center;
+      padding: 10px 0 20px 0;
+    }
+
+    h1 {
+      color: var(--accent-color);
+      margin-bottom: 8px;
+      font-size: 2.2rem;
+    }
+
+    .description {
+      opacity: 0.8;
+      max-width: 800px;
+      margin: 0 auto;
+      line-height: 1.5;
+    }
+
+    .main-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 1;
+    }
+
+    #renderCanvas {
+      width: 100%;
+      max-width: 800px;
+      height: auto;
+      aspect-ratio: 5/4;
+      border-radius: var(--border-radius);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      margin-bottom: 20px;
+      display: block;
+      /* Ensures proper rendering */
+    }
+
+    .controls-panel {
+      background-color: var(--panel-bg);
+      border-radius: var(--border-radius);
+      padding: 20px;
+      width: 100%;
+      max-width: 1000px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .input-group {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: var(--light-accent);
+    }
+
+    input {
+      width: 100%;
+      padding: 10px 15px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: var(--border-radius);
+      background-color: var(--input-bg);
+      color: var(--text-color);
+      font-size: 1rem;
+      transition: all 0.3s;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: var(--accent-color);
+      box-shadow: 0 0 0 2px rgba(63, 142, 252, 0.3);
+    }
+
+    input::placeholder {
+      color: rgba(230, 230, 230, 0.5);
+    }
+
+    .button-container {
+      display: flex;
+      margin-top: 28px;
+      /* Added margin to align with inputs, accounting for label height */
+    }
+
+    button {
+      padding: 10px 25px;
+      background-color: var(--accent-color);
+      color: white;
+      border: none;
+      border-radius: var(--border-radius);
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      height: 43px;
+      /* Match the height of the inputs */
+    }
+
+    button:hover {
+      background-color: var(--light-accent);
+      transform: translateY(-2px);
+    }
+
+    button:active {
+      transform: translateY(1px);
+    }
+
+    .parameter-info {
+      font-size: 0.8rem;
+      opacity: 0.7;
+      margin-top: 5px;
+    }
+
+    footer {
+      margin-top: 30px;
+      text-align: center;
+      font-size: 0.9rem;
+      opacity: 0.7;
+    }
+
+    .keyboard-hint {
+      font-size: 0.85rem;
+      margin-top: 15px;
+      text-align: center;
+      font-style: italic;
+      opacity: 0.7;
+    }
+
+    @media (max-width: 768px) {
+      .controls-panel {
+        flex-direction: column;
+      }
+
+      .input-group {
+        width: 100%;
+      }
+
+      .button-container {
+        margin-top: 0;
+        /* Reset margin on mobile */
+      }
+
+      h1 {
+        font-size: 1.8rem;
+      }
+    }
+  </style>
 </head>
 
 <body>
-  <canvas id="renderCanvas" width="1000" height="800"></canvas>
-  <section>
-    <input type="text" id="seedInput" />
-    <input type="text" id="mInput" />
-    <button id="updateButton">Update</button>
-  </section>
+  <header>
+    <h1>Procedural Planet Generator</h1>
+    <p class="description">
+      Generate unique 3D planets with customizable terrain. Use middle-click to highlight specific regions.
+      Drag to rotate, scroll to zoom in/out.
+    </p>
+  </header>
+
+  <div class="main-container">
+    <canvas id="renderCanvas"></canvas>
+
+    <div class="controls-panel">
+      <div class="input-group">
+        <label for="seedInput">Seed Value</label>
+        <input type="text" id="seedInput" placeholder="Enter seed number (e.g., 12345)" />
+        <p class="parameter-info">Controls the randomization pattern of terrain generation</p>
+      </div>
+
+      <div class="input-group">
+        <label for="mInput">Resolution (m)</label>
+        <input type="text" id="mInput" placeholder="Enter resolution (e.g., 100)" />
+        <p class="parameter-info">Higher values create more detailed planets but may affect performance</p>
+      </div>
+
+      <div class="button-container">
+        <button id="updateButton">Generate Planet</button>
+      </div>
+    </div>
+
+    <p class="keyboard-hint">Press Enter in any input field to generate a new planet</p>
+  </div>
+
+  <footer>
+    &copy; 2025 Planet Generator | Created with BabylonJS
+  </footer>
+
   <script src="app.js"></script>
+  <script>
+    // Prevent page scrolling when mouse is over the canvas
+    document.getElementById('renderCanvas').addEventListener('wheel', function (event) {
+      event.preventDefault();
+    }, { passive: false });
+  </script>
 </body>
 
 </html>
