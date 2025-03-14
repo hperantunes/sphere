@@ -2,6 +2,12 @@
 
 An interactive 3D planet generator built with Babylon.js that creates procedurally generated terrain using Simplex Noise algorithms. The application renders a customizable globe with realistic terrain features, optional cloud layers, and interactive capabilities.
 
+## 🗺️ Live Demo
+
+- Check out the live demo at https://hperantunes.github.io/sphere/
+
+![hperantunes-github-io-sphere-2025-03-14-10_53_02](https://github.com/user-attachments/assets/f3eec973-6a13-4c46-a36b-1b63392573ba)
+
 ## ✨ Features
 
 - **Procedural Terrain Generation**: Create diverse planetary landscapes using Simplex Noise
