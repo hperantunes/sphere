@@ -228,31 +228,58 @@ function getTerrainColorByElevation(elevationNoise, colors) {
 }
 
 function applyTerrainToMesh(planetMesh, elevationSimplex, config) {
-  const faceColors = planetMesh.goldbergData.faceCenters.map((face, i) => {
-    if (config.renderPoleIndicators) {
-      const latitude = face._y * 90;
-      if (latitude > 89.5) {
-        return [i, i, BABYLON.Color3.Green()];
-      } else if (latitude < -89.5) {
-        return [i, i, BABYLON.Color3.Red()];
-      }
+  const { faceCenters, faceColors } = planetMesh.goldbergData;
+  const vertexColors = new Float32Array(planetMesh.getTotalVertices() * 4);
+  const northPoleColor = new BABYLON.Color4(0, 1, 0, 1);
+  const southPoleColor = new BABYLON.Color4(1, 0, 0, 1);
+  let colorOffset = 0;
+
+  for (let faceNumber = 0; faceNumber < faceCenters.length; faceNumber++) {
+    const face = faceCenters[faceNumber];
+    const latitude = face._y * 90;
+    let color;
+
+    if (config.renderPoleIndicators && latitude > 89.5) {
+      color = northPoleColor;
+    } else if (config.renderPoleIndicators && latitude < -89.5) {
+      color = southPoleColor;
+    } else {
+      const elevationNoise = getNoise(
+        face._x, face._y, face._z,
+        config.terrain.noise,
+        elevationSimplex
+      );
+      color = getTerrainColorByElevation(elevationNoise, config.terrain.colors);
     }
 
-    const elevationNoise = getNoise(
-      face._x, face._y, face._z,
-      config.terrain.noise,
-      elevationSimplex
-    );
+    faceColors[faceNumber] = color;
+    const vertexCount = faceNumber < 12 ? 5 : 6;
+    for (let vertex = 0; vertex < vertexCount; vertex++) {
+      color.toArray(vertexColors, colorOffset);
+      colorOffset += 4;
+    }
+  }
 
-    const color = getTerrainColorByElevation(
-      elevationNoise,
-      config.terrain.colors
-    );
+  planetMesh.setVerticesData(BABYLON.VertexBuffer.ColorKind, vertexColors, true);
+}
 
-    return [i, i, color];
-  });
+function setPlanetFaceColor(planetMesh, faceNumber, color) {
+  const vertexColors = planetMesh.getVerticesData(BABYLON.VertexBuffer.ColorKind);
+  const firstVertex = faceNumber < 12 ? faceNumber * 5 : 60 + (faceNumber - 12) * 6;
+  const colorOffset = firstVertex * 4;
+  const colorEnd = colorOffset + (faceNumber < 12 ? 5 : 6) * 4;
 
-  planetMesh.setGoldbergFaceColors(faceColors);
+  planetMesh.goldbergData.faceColors[faceNumber] = color;
+  for (let offset = colorOffset; offset < colorEnd; offset += 4) {
+    color.toArray(vertexColors, offset);
+  }
+
+  const colorBuffer = planetMesh.getVertexBuffer(BABYLON.VertexBuffer.ColorKind);
+  planetMesh.getScene().getEngine().updateDynamicVertexBuffer(
+    colorBuffer.getBuffer(),
+    vertexColors.subarray(colorOffset, colorEnd),
+    colorOffset * Float32Array.BYTES_PER_ELEMENT
+  );
 }
 
 function createCloudsLayer(scene, config) {
@@ -295,18 +322,26 @@ function getFaceNumberFromFacetId(faceId) {
 }
 
 function setupPointerInteractions(scene, planetMesh, config) {
-  scene.onPointerDown = (evt, pickResult) => {
+  scene.skipPointerMovePicking = true;
+  scene.skipPointerDownPicking = true;
+  scene.skipPointerUpPicking = true;
+
+  scene.onPointerDown = (evt) => {
     // Middle-mouse click
     if (evt.button !== 1) {
       return;
     }
 
+    const pickResult = scene.pick(
+      scene.pointerX,
+      scene.pointerY,
+      (mesh) => mesh === planetMesh && mesh.isPickable && mesh.isVisible && mesh.isEnabled()
+    );
+
     if (pickResult.hit && pickResult.pickedMesh === planetMesh) {
       const faceId = pickResult.faceId;
       const faceNumber = getFaceNumberFromFacetId(faceId);
-      planetMesh.setGoldbergFaceColors([
-        [faceNumber, faceNumber, config.terrain.colors.highlight1]
-      ]);
+      setPlanetFaceColor(planetMesh, faceNumber, config.terrain.colors.highlight1);
     }
   };
 }
@@ -318,14 +353,33 @@ function startRenderLoop(engine, scene, config) {
     cloudsShaderMaterial = scene.getMaterialByName("cloudsShader");
   }
 
+  const camera = scene.activeCamera;
+  let renderRequested = true;
+  const requestRender = () => {
+    renderRequested = true;
+  };
+
+  camera.onViewMatrixChangedObservable.add(requestRender);
+  camera.onProjectionMatrixChangedObservable.add(requestRender);
+  scene.onPointerObservable.add(requestRender, BABYLON.PointerEventTypes.POINTERDOWN);
+  engine.onResizeObservable.add(requestRender);
+  engine.onContextRestoredObservable.add(requestRender);
+
   engine.runRenderLoop(() => {
+    camera.update();
+    if (!renderRequested && !cloudsShaderMaterial) {
+      return;
+    }
+
     if (cloudsShaderMaterial) {
       const time = performance.now();
       cloudsShaderMaterial.setFloat("fastTime", time * config.clouds.shader.fastTime);
       cloudsShaderMaterial.setFloat("slowTime", time * config.clouds.shader.slowTime);
     }
 
-    scene.render();
+    const ready = scene.isReady();
+    scene.render(false);
+    renderRequested = !ready;
   });
 }
 
